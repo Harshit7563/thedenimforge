@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <rect width="200" height="200" fill="#f0ebe3"/>
+  <rect x="25" y="50" width="55" height="70" rx="4" fill="#1e3a5f" opacity="0.9"/>
+  <rect x="72" y="40" width="55" height="70" rx="4" fill="#2c5282"/>
+  <rect x="120" y="55" width="55" height="70" rx="4" fill="#1e3a5f" opacity="0.8"/>
+  <text x="100" y="155" text-anchor="middle" font-family="system-ui" font-size="22" font-weight="800" fill="#e11d48">50+</text>
+  <text x="100" y="180" text-anchor="middle" font-family="system-ui" font-size="10" font-weight="700" fill="#1e3a5f">BULK ORDERS</text>
+</svg>

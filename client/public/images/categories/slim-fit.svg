@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <rect width="200" height="200" fill="#e8ecf2"/>
+  <path d="M75 25 L95 25 L100 155 L85 155 Z" fill="#2c4a7c"/>
+  <path d="M105 25 L125 25 L115 155 L100 155 Z" fill="#1e3a5f"/>
+  <path d="M70 55h60" stroke="#4a6fa5" stroke-width="2"/>
+  <text x="100" y="180" text-anchor="middle" font-family="system-ui" font-size="11" font-weight="700" fill="#1e3a5f">SLIM FIT</text>
+</svg>

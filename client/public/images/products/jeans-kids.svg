@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 750" fill="none">
+  <rect width="600" height="750" fill="#f5f0e8"/>
+  <rect x="100" y="80" width="400" height="590" rx="12" fill="#7a9e5a"/>
+  <rect x="140" y="120" width="320" height="180" rx="4" fill="#5a7e3a" opacity="0.4"/>
+  <circle cx="140" cy="210" r="7" fill="#c9a227"/>
+  <circle cx="460" cy="210" r="7" fill="#c9a227"/>
+  <text x="300" y="580" text-anchor="middle" font-family="system-ui,sans-serif" font-size="24" font-weight="600" fill="#3d5a2a">KIDS DENIM</text>
+</svg>

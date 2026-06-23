@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <rect width="200" height="200" fill="#dce4ef"/>
+  <rect x="30" y="25" width="140" height="150" rx="8" fill="#1e3a5f"/>
+  <path d="M55 55h90v35H55z" fill="#2c5282" opacity="0.6"/>
+  <path d="M70 95h60v60H70z" fill="#1a365d"/>
+  <rect x="48" y="48" width="10" height="10" rx="2" fill="#c9a227"/>
+  <rect x="142" y="48" width="10" height="10" rx="2" fill="#c9a227"/>
+  <text x="100" y="175" text-anchor="middle" font-family="system-ui" font-size="11" font-weight="700" fill="#1e3a5f">MEN'S</text>
+</svg>
