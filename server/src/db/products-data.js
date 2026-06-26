@@ -22,7 +22,7 @@ function wholesaleFromRetail(retail) {
   return Math.max(100, Math.min(retail - 50, Math.round(retail * rate / 10) * 10));
 }
 
-function makeProduct(i, { name, category, brand, retail, fit, wash, fabric, flags = {}, sizes, moq }) {
+function makeProduct(i, { name, category, brand, retail, fit, wash, fabric, sizes, moq, featured, is_new, bestseller }) {
   const slug = slugify(name);
   return {
     name,
@@ -36,7 +36,9 @@ function makeProduct(i, { name, category, brand, retail, fit, wash, fabric, flag
     wash: wash || washes[i % washes.length],
     moq: moq || (category === 'bulk-orders' ? 50 : category === 'export-quality' ? 25 : 10),
     sizes: sizes || (category === 'kids-jeans' ? '["4","6","8","10","12","14"]' : '["28","30","32","34","36","38","40"]'),
-    ...flags,
+    featured: featured || false,
+    is_new: is_new || false,
+    bestseller: bestseller || false,
   };
 }
 
