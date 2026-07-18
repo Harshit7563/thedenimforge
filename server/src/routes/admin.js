@@ -76,14 +76,22 @@ router.get('/inquiries', adminMiddleware, async (_req, res) => {
   }
 });
 
-router.get('/products', adminMiddleware, async (_req, res) => {
+router.get('/products', adminMiddleware, async (req, res) => {
   try {
-    const result = await pool.query(`
+    const { category_id } = req.query;
+    let query = `
       SELECT p.*, c.name as category_name, b.name as brand_name
       FROM products p
       LEFT JOIN categories c ON p.category_id = c.id
       LEFT JOIN brands b ON p.brand_id = b.id
-      ORDER BY p.created_at DESC`);
+      WHERE 1=1`;
+    const params = [];
+    if (category_id) {
+      params.push(category_id);
+      query += ` AND p.category_id = $1`;
+    }
+    query += ' ORDER BY p.created_at DESC';
+    const result = await pool.query(query, params);
     res.json(result.rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -93,10 +101,46 @@ router.get('/products', adminMiddleware, async (_req, res) => {
 router.post('/products', adminMiddleware, async (req, res) => {
   try {
     const d = req.body;
+    if (!d.name?.trim()) return res.status(400).json({ error: 'Product name is required' });
+    if (!d.category_id) return res.status(400).json({ error: 'Category is required' });
+    if (!d.wholesale_price && d.wholesale_price !== 0) {
+      return res.status(400).json({ error: 'Wholesale price is required' });
+    }
+
+    const slug = (d.slug || d.name)
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
+    const sku = d.sku || `DF-${Date.now().toString().slice(-6)}`;
+    const images = Array.isArray(d.images) && d.images.length
+      ? d.images
+      : ['/images/products/jeans-mens-blue-1.jpg'];
+
     const result = await pool.query(
       `INSERT INTO products (name, slug, description, short_description, category_id, brand_id, retail_price, wholesale_price, moq, sku, fabric, fit, wash, images, sizes, colors, is_featured, is_new, is_bestseller, stock)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20) RETURNING *`,
-      [d.name, d.slug, d.description, d.short_description, d.category_id, d.brand_id, d.retail_price, d.wholesale_price, d.moq || 10, d.sku, d.fabric, d.fit, d.wash, JSON.stringify(d.images || ['/images/products/jeans-mens-blue-1.jpg']), JSON.stringify(d.sizes || ['28','30','32','34','36','38','40']), JSON.stringify(d.colors || ['Blue','Black']), d.is_featured || false, d.is_new || false, d.is_bestseller || false, d.stock || 1000]
+      [
+        d.name.trim(),
+        slug,
+        d.description || '',
+        d.short_description || d.name.trim(),
+        d.category_id,
+        d.brand_id || null,
+        d.retail_price || d.wholesale_price,
+        d.wholesale_price,
+        d.moq || 10,
+        sku,
+        d.fabric || '',
+        d.fit || '',
+        d.wash || '',
+        JSON.stringify(images),
+        JSON.stringify(d.sizes || ['28', '30', '32', '34', '36', '38', '40']),
+        JSON.stringify(d.colors || ['Blue', 'Black']),
+        d.is_featured || false,
+        d.is_new || false,
+        d.is_bestseller || false,
+        d.stock || 1000,
+      ]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {

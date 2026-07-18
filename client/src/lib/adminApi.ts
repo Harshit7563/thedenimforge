@@ -26,12 +26,30 @@ export const adminApi = {
       method: 'POST', body: JSON.stringify({ email, password }),
     }),
   getStats: () => adminRequest<{ products: number; orders: number; inquiries: number; users: number; revenue: string }>('/stats'),
-  getProducts: () => adminRequest<Record<string, unknown>[]>('/products'),
+  getProducts: (categoryId?: string | number) => {
+    const q = categoryId ? `?category_id=${categoryId}` : '';
+    return adminRequest<Record<string, unknown>[]>(`/products${q}`);
+  },
   createProduct: (data: Record<string, unknown>) =>
     adminRequest('/products', { method: 'POST', body: JSON.stringify(data) }),
   updateProduct: (id: string, data: Record<string, unknown>) =>
     adminRequest(`/products/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   deleteProduct: (id: string) => adminRequest(`/products/${id}`, { method: 'DELETE' }),
+  uploadImages: async (files: File[]) => {
+    const form = new FormData();
+    files.forEach((f) => form.append('images', f));
+    const token = adminToken();
+    const res = await fetch(`${API}/admin/upload/products`, {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: form,
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: 'Upload failed' }));
+      throw new Error(err.error || 'Upload failed');
+    }
+    return res.json() as Promise<{ urls: string[] }>;
+  },
   getOrders: () => adminRequest<Record<string, unknown>[]>('/orders'),
   updateOrderStatus: (id: string, status: string) =>
     adminRequest(`/orders/${id}`, { method: 'PATCH', body: JSON.stringify({ status }) }),

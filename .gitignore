@@ -25,6 +25,9 @@ Thumbs.db
 .idea/
 .cursor/
 
-# Temp
+# Uploaded product images (keep folder)
+server/uploads/**
+!server/uploads/.gitkeep
+
 *.tmp
 .cache/
