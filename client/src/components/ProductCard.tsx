@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom';
-import { Star } from 'lucide-react';
 import { type Product, formatPrice } from '../lib/api';
 import { FALLBACK_IMAGE } from '../lib/images';
 import SafeImage from './SafeImage';
@@ -14,57 +13,93 @@ function getImages(images: Product['images']): string[] {
   try {
     return JSON.parse(images as unknown as string);
   } catch {
-    return ['https://images.unsplash.com/photo-1542272604-787c3835535d?w=600'];
+    return [FALLBACK_IMAGE];
   }
+}
+
+function discountPct(retail: string | number, wholesale: string | number) {
+  const r = Number(retail);
+  const w = Number(wholesale);
+  if (!r || !w || r <= w) return null;
+  return Math.round(((r - w) / r) * 100);
 }
 
 export default function ProductCard({ product, showHotBadge }: Props) {
   const images = getImages(product.images);
   const image = images[0] || FALLBACK_IMAGE;
+  const save = discountPct(product.retail_price, product.wholesale_price);
+  const badge = showHotBadge
+    ? 'Hot'
+    : product.is_new
+      ? 'New'
+      : product.is_bestseller
+        ? 'Best'
+        : product.is_featured
+          ? 'Top'
+          : null;
 
   return (
-    <Link to={`/product/${product.slug}`} className="product-card group block bg-white rounded-xl overflow-hidden border border-[#f0f0f0]">
-      <div className="relative aspect-[4/5] bg-[#f5f5f5] overflow-hidden">
+    <Link
+      to={`/product/${product.slug}`}
+      className="group flex h-full flex-col overflow-hidden rounded-sm bg-white shadow-[0_1px_3px_rgba(15,23,36,0.06)] ring-1 ring-[#e4e7ec] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(15,23,36,0.12)] hover:ring-[#0f1724]/25"
+    >
+      <div className="relative aspect-[3/4] overflow-hidden bg-[#dfe5ee]">
         <SafeImage
           src={image}
           alt={product.name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
         />
-        <div className="absolute top-2.5 left-2.5 flex flex-col gap-1">
-          {showHotBadge && (
-            <span className="bg-gradient-to-r from-orange-500 to-[#e11d48] text-white text-[10px] px-2 py-0.5 rounded-sm font-bold tracking-wide">🔥 HOT</span>
+
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0f1724]/50 via-transparent to-transparent opacity-60 transition-opacity group-hover:opacity-80" />
+
+        <div className="absolute left-3 top-3 flex flex-col gap-1.5">
+          {badge && (
+            <span className="w-fit bg-[#0f1724] px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.16em] text-white">
+              {badge}
+            </span>
           )}
-          {product.is_new && (
-            <span className="bg-[#1a1a1a] text-white text-[10px] px-2 py-0.5 rounded-sm font-semibold tracking-wide">NEW</span>
+          {save != null && save >= 10 && (
+            <span className="w-fit bg-[#c41e3a] px-2.5 py-1 text-[9px] font-bold uppercase tracking-wide text-white">
+              Save {save}%
+            </span>
           )}
-          {product.is_bestseller && (
-            <span className="bg-[#e11d48] text-white text-[10px] px-2 py-0.5 rounded-sm font-semibold tracking-wide">BESTSELLER</span>
-          )}
+        </div>
+
+        <div className="absolute inset-x-3 bottom-3 translate-y-3 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+          <span className="block bg-white py-2.5 text-center text-[10px] font-bold uppercase tracking-[0.2em] text-[#0f1724]">
+            View details
+          </span>
         </div>
       </div>
 
-      <div className="p-3 sm:p-3.5">
-        {product.brand_name && (
-          <p className="text-[11px] text-gray-400 uppercase tracking-wide mb-1 truncate">{product.brand_name}</p>
-        )}
-        <h3 className="text-[13px] sm:text-sm font-medium text-[#1a1a1a] line-clamp-2 leading-snug min-h-[2.5rem] group-hover:text-[#e11d48] transition-colors">
+      <div className="flex flex-1 flex-col px-3.5 py-4 sm:px-4">
+        <h3 className="font-display line-clamp-2 min-h-[2.75rem] text-[14px] font-semibold leading-snug text-[#0f1724] transition-colors group-hover:text-[#c41e3a] sm:text-[15px]">
           {product.name}
         </h3>
 
-        <div className="flex items-center gap-1 mt-1.5 mb-2">
-          <Star size={11} className="fill-amber-400 text-amber-400" />
-          <span className="text-[11px] text-gray-500">{product.rating} · {product.review_count} reviews</span>
-        </div>
+        {(product.fit || product.wash) && (
+          <p className="mt-1.5 truncate text-[11px] text-[#6b7585]">
+            {[product.fit, product.wash].filter(Boolean).join(' · ')}
+          </p>
+        )}
 
-        <div className="flex flex-col gap-0.5">
-          <div className="flex items-baseline gap-2">
-            <span className="text-base font-bold text-[#1a1a1a]">{formatPrice(product.wholesale_price)}</span>
-            <span className="text-[11px] text-gray-400 line-through">{formatPrice(product.retail_price)}</span>
+        <div className="mt-4 flex items-end justify-between gap-3 border-t border-[#eef1f5] pt-3.5">
+          <div>
+            <p className="mb-1 text-[9px] font-bold uppercase tracking-[0.18em] text-[#c41e3a]">
+              Wholesale price
+            </p>
+            <div className="flex items-baseline gap-2">
+              <span className="text-[20px] font-bold leading-none tracking-tight text-[#0f1724]">
+                {formatPrice(product.wholesale_price)}
+              </span>
+              <span className="text-xs text-[#a0a8b4] line-through">
+                {formatPrice(product.retail_price)}
+              </span>
+            </div>
           </div>
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] text-[#e11d48] font-semibold uppercase tracking-wide">Wholesale</span>
-            <span className="text-[10px] text-gray-400">MOQ {product.moq}</span>
-          </div>
+          <span className="rounded-full bg-[#0f1724] px-2.5 py-1 text-[10px] font-semibold text-white">
+            MOQ {product.moq}
+          </span>
         </div>
       </div>
     </Link>

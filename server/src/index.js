@@ -14,6 +14,7 @@ import inquiryRoutes from './routes/inquiries.js';
 import newsletterRoutes from './routes/newsletter.js';
 import adminRoutes from './routes/admin.js';
 import uploadRoutes from './routes/upload.js';
+import addressRoutes from './routes/addresses.js';
 
 dotenv.config();
 
@@ -22,6 +23,10 @@ const app = express();
 const PORT = process.env.PORT || 4000;
 
 const allowedOrigins = [
+  'http://localhost:5175',
+  'http://127.0.0.1:5175',
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
   'http://localhost:5173',
   'http://127.0.0.1:5173',
   'https://thedenimforge.com',
@@ -57,6 +62,7 @@ app.use('/api/inquiries', inquiryRoutes);
 app.use('/api/newsletter', newsletterRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/admin/upload', uploadRoutes);
+app.use('/api/addresses', addressRoutes);
 
 app.use((err, _req, res, _next) => {
   console.error(err);

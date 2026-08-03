@@ -12,7 +12,7 @@ export default function AboutPage() {
         <h2 className="text-xl font-bold text-denim">Why Choose The Denim Forge?</h2>
         <ul className="list-disc pl-6 space-y-2">
           <li>Factory-direct pricing from ₹100 to ₹8,000 per piece</li>
-          <li>MOQ as low as 10 pieces per style</li>
+          <li>MOQ as low as 1 piece per style</li>
           <li>Export-quality denim meeting international standards</li>
           <li>Wide range of fits: Slim, Regular, Bootcut, Skinny, Mom Fit & more</li>
           <li>Pan India shipping with dedicated logistics support</li>

@@ -3,5 +3,4 @@
   <rect x="45" y="30" width="110" height="140" rx="6" fill="#3d5a80"/>
   <rect x="60" y="50" width="80" height="35" rx="2" fill="#2c4a7c"/>
   <rect x="65" y="95" width="70" height="55" rx="2" fill="#1e3a5f"/>
-  <text x="100" y="185" text-anchor="middle" font-family="system-ui" font-size="10" font-weight="700" fill="#1e3a5f">REGULAR FIT</text>
 </svg>

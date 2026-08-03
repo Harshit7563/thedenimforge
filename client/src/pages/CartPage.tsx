@@ -77,7 +77,7 @@ export default function CartPage() {
                   <Link to={`/product/${item.slug}`} className="font-medium text-sm sm:text-base text-[#1a1a1a] hover:text-[#e11d48] line-clamp-2 leading-snug">
                     {item.name}
                   </Link>
-                  <p className="text-xs text-gray-500 mt-1.5">Size {item.size} · {item.color}</p>
+                  <p className="text-xs text-gray-500 mt-1.5">Size {item.size}</p>
                   <p className="text-xs text-gray-400">Qty {item.quantity} · {formatPrice(item.wholesale_price)}/pc</p>
                   <p className="text-base font-bold text-[#1a1a1a] mt-1.5">
                     {formatPrice(parseFloat(item.wholesale_price) * item.quantity)}

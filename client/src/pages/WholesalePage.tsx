@@ -6,19 +6,23 @@ export default function WholesalePage() {
   const [form, setForm] = useState({ name: '', email: '', phone: '', company_name: '', product_interest: '', quantity: '', message: '' });
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError('');
     try {
       await api.submitInquiry({ ...form, quantity: parseInt(form.quantity) || undefined });
       setSubmitted(true);
-    } catch { /* ignore */ }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not submit inquiry. Please try again.');
+    }
     setLoading(false);
   };
 
   const benefits = [
-    { icon: Package, title: 'Factory Direct Pricing', desc: 'Wholesale rates from ₹100/piece up to ₹8,000 — 70+ styles with MOQ of just 10 units' },
+    { icon: Package, title: 'Factory Direct Pricing', desc: 'Wholesale rates from ₹100/piece up to ₹8,000 — 70+ styles with MOQ as low as 1 unit' },
     { icon: Truck, title: 'Pan India Delivery', desc: 'Fast shipping across India with bulk order logistics support' },
     { icon: CheckCircle, title: 'Export Quality', desc: 'Premium denim meeting international quality standards' },
     { icon: Headphones, title: 'Dedicated Support', desc: 'Personal account manager for wholesale buyers' },
@@ -46,18 +50,19 @@ export default function WholesalePage() {
 
         <div className="grid md:grid-cols-2 gap-12">
           <div>
-            <h2 className="text-2xl font-bold text-denim mb-6">Wholesale Pricing Tiers</h2>
+            <h2 className="text-2xl font-bold text-denim mb-6">Volume Pricing Guide</h2>
+            <p className="text-sm text-gray-500 mb-4">Indicative tiers — final rates confirmed on inquiry. MOQ starts at 1 piece.</p>
             <div className="space-y-4">
               {[
-                { qty: '10-49 pcs', discount: 'Factory Price', price: 'From ₹100/pc' },
-                { qty: '50-99 pcs', discount: '5% Extra Off', price: 'From ₹551/pc' },
-                { qty: '100-499 pcs', discount: '10% Extra Off', price: 'From ₹522/pc' },
-                { qty: '500+ pcs', discount: 'Custom Pricing', price: 'Contact Us' },
+                { qty: '1–49 pcs', discount: 'Factory wholesale price', price: 'From ₹100/pc' },
+                { qty: '50–99 pcs', discount: 'Volume pricing available', price: 'Ask for quote' },
+                { qty: '100–499 pcs', discount: 'Bulk wholesale rates', price: 'Ask for quote' },
+                { qty: '500+ pcs', discount: 'Custom / export pricing', price: 'Contact us' },
               ].map((tier) => (
                 <div key={tier.qty} className="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
                   <div>
                     <p className="font-medium">{tier.qty}</p>
-                    <p className="text-sm text-forge-red">{tier.discount}</p>
+                    <p className="text-sm text-forge">{tier.discount}</p>
                   </div>
                   <p className="font-bold text-denim">{tier.price}</p>
                 </div>
@@ -82,7 +87,8 @@ export default function WholesalePage() {
                 <input placeholder="Product Interest" value={form.product_interest} onChange={(e) => setForm({ ...form, product_interest: e.target.value })} className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-denim" />
                 <input type="number" placeholder="Estimated Quantity" value={form.quantity} onChange={(e) => setForm({ ...form, quantity: e.target.value })} className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-denim" />
                 <textarea placeholder="Message" rows={3} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-denim" />
-                <button type="submit" disabled={loading} className="w-full bg-forge-red text-white py-3 rounded-full font-semibold hover:bg-red-700 transition disabled:opacity-50">
+                {error && <p className="text-sm text-[#c41e3a]">{error}</p>}
+                <button type="submit" disabled={loading} className="w-full bg-forge text-white py-3 rounded-full font-semibold hover:bg-forge-deep transition disabled:opacity-50">
                   {loading ? 'Submitting...' : 'Submit Inquiry'}
                 </button>
               </form>

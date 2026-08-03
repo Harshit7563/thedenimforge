@@ -3,5 +3,4 @@
   <rect x="55" y="40" width="90" height="120" rx="8" fill="#5a8f4a"/>
   <path d="M70 60h60v25H70z" fill="#7aad6a" opacity="0.6"/>
   <circle cx="100" cy="110" r="28" fill="#4a7a3a"/>
-  <text x="100" y="175" text-anchor="middle" font-family="system-ui" font-size="11" font-weight="700" fill="#3d6530">KIDS</text>
 </svg>

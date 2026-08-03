@@ -1,14 +1,17 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const from = (location.state as { from?: string } | null)?.from || '/account';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -16,7 +19,7 @@ export default function LoginPage() {
     setError('');
     try {
       await login(email, password);
-      navigate('/');
+      navigate(from.startsWith('/') ? from : '/account');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
     }
@@ -45,7 +48,6 @@ export default function LoginPage() {
         <p className="text-sm text-center mt-5 text-gray-500">
           Don't have an account? <Link to="/register" className="text-[#1a1a1a] font-semibold hover:underline">Sign Up</Link>
         </p>
-        <p className="text-xs text-center mt-3 text-gray-400">Demo: demo@denimforge.com / demo1234</p>
       </div>
     </div>
   );

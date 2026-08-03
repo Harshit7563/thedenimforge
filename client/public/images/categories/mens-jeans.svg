@@ -5,5 +5,4 @@
   <path d="M70 95h60v60H70z" fill="#1a365d"/>
   <rect x="48" y="48" width="10" height="10" rx="2" fill="#c9a227"/>
   <rect x="142" y="48" width="10" height="10" rx="2" fill="#c9a227"/>
-  <text x="100" y="175" text-anchor="middle" font-family="system-ui" font-size="11" font-weight="700" fill="#1e3a5f">MEN'S</text>
 </svg>

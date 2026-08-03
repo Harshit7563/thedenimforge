@@ -2,5 +2,4 @@
   <rect width="200" height="200" fill="#dce4ef"/>
   <path d="M70 30 L90 30 L85 150 L75 150 Z" fill="#2c4a7c"/>
   <path d="M110 30 L130 30 L140 150 L100 150 Z" fill="#1e3a5f"/>
-  <text x="100" y="180" text-anchor="middle" font-family="system-ui" font-size="10" font-weight="700" fill="#1e3a5f">BOOTCUT</text>
 </svg>

@@ -13,7 +13,7 @@ const categories = [
   { name: 'Bootcut', slug: 'bootcut', description: 'Bootcut & flare styles', sort_order: 6 },
   { name: 'Distressed', slug: 'distressed', description: 'Ripped & distressed denim', sort_order: 7 },
   { name: 'New Arrivals', slug: 'new-arrivals', description: 'Latest wholesale styles', sort_order: 8 },
-  { name: 'Bulk Orders', slug: 'bulk-orders', description: 'MOQ 50+ special pricing', sort_order: 9 },
+  { name: 'Bulk Orders', slug: 'bulk-orders', description: 'Volume pricing for larger wholesale buys', sort_order: 9 },
   { name: 'Export Quality', slug: 'export-quality', description: 'International export grade', sort_order: 10 },
 ];
 
@@ -63,9 +63,9 @@ async function seed() {
       [
         p.name, p.slug,
         `Premium wholesale ${p.fit.toLowerCase()} fit denim jeans. ${p.fabric}. Perfect for retailers and distributors.`,
-        `${p.fit} fit | ${p.wash} | MOQ ${p.moq || 10} pcs`,
+        `${p.fit} fit | ${p.wash} | MOQ ${p.moq || 1} pcs`,
         catRes.rows[0]?.id, brandRes.rows[0]?.id,
-        p.retail, p.wholesale, p.moq || 10,
+        p.retail, p.wholesale, p.moq || 1,
         `DF-${String(i + 1).padStart(4, '0')}`,
         p.fabric, p.fit, p.wash,
         JSON.stringify(images),

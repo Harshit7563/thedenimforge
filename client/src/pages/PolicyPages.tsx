@@ -51,7 +51,7 @@ export function TermsPage() {
       <p>All prices are listed in Indian Rupees (INR). Wholesale prices require minimum order quantities (MOQ) as specified per product. Prices are subject to change without prior notice. Confirmed orders will be honoured at the price agreed at the time of order confirmation.</p>
 
       <H2>5. Order Confirmation</H2>
-      <p>Placing an order on our website constitutes an offer to purchase. An order is confirmed only after we send written confirmation via email and receive the required advance payment. We reserve the right to cancel orders due to stock unavailability, pricing errors, or incomplete verification.</p>
+      <p>Placing an order on our website constitutes an offer to purchase. Orders are confirmed after we send written confirmation via email. Payment is Cash on Delivery (COD) — pay when the order arrives. We reserve the right to cancel orders due to stock unavailability, pricing errors, or incomplete verification.</p>
 
       <H2>6. Account Responsibility</H2>
       <p>You are responsible for maintaining the confidentiality of your account credentials and for all activities under your account. Notify us immediately at {EMAIL} of any unauthorized use.</p>
@@ -129,7 +129,7 @@ export function ShippingPage() {
 
       <H2>2. Processing Time</H2>
       <ul className="list-disc pl-5 space-y-1">
-        <li><strong>Standard orders (10–49 pcs):</strong> 3–5 business days after payment confirmation</li>
+        <li><strong>Standard orders (1–49 pcs):</strong> 3–5 business days after order confirmation</li>
         <li><strong>Medium bulk (50–99 pcs):</strong> 5–7 business days</li>
         <li><strong>Large bulk (100+ pcs):</strong> 7–10 business days</li>
         <li><strong>Custom/manufacturing orders:</strong> 15–21 business days (timeline shared at confirmation)</li>
@@ -193,30 +193,26 @@ export function RefundPage() {
 export function PaymentPage() {
   return (
     <PolicyLayout title="Fees & Payments Policy">
-      <H2>1. Accepted Payment Methods</H2>
+      <H2>1. Accepted Payment Method</H2>
       <ul className="list-disc pl-5 space-y-1">
-        <li>Bank Transfer (NEFT/RTGS/IMPS)</li>
-        <li>UPI (Google Pay, PhonePe, Paytm)</li>
-        <li>Cheque (for established buyers only)</li>
-        <li>Cash on Delivery (COD) — minimum order value ₹1,000</li>
-        <li>Online payment gateway (where available)</li>
+        <li><strong>Cash on Delivery (COD)</strong> — currently the only payment method on {WEBSITE}</li>
       </ul>
 
-      <H2>2. Payment Terms</H2>
+      <H2>2. How COD Works</H2>
       <ul className="list-disc pl-5 space-y-1">
-        <li><strong>New buyers:</strong> 50% advance at order confirmation, balance before dispatch</li>
-        <li><strong>Established buyers:</strong> Credit terms up to 15 days may be offered upon approval</li>
-        <li><strong>Bulk orders (500+ pcs):</strong> Custom payment schedule by mutual agreement</li>
+        <li>Place your order online — COD is selected automatically</li>
+        <li>Pay cash to the delivery partner when your order arrives</li>
+        <li>Order confirmation is sent by email / SMS after placement</li>
       </ul>
 
       <H2>3. GST</H2>
       <p>All prices are exclusive of GST unless stated otherwise. GST at applicable rates will be added to invoices. GSTIN can be provided for input tax credit.</p>
 
       <H2>4. Pricing Errors</H2>
-      <p>In case of pricing errors on {WEBSITE}, we reserve the right to cancel the order and issue a full refund of any payment received. We will notify you before processing.</p>
+      <p>In case of pricing errors on {WEBSITE}, we reserve the right to cancel the order. We will notify you before processing any change.</p>
 
-      <H2>5. Bank Details</H2>
-      <p>Payment details are shared upon order confirmation via email. Never transfer money to unverified accounts. Official communication is only from {EMAIL} and {PHONE}.</p>
+      <H2>5. Support</H2>
+      <p>For payment or order queries, contact {EMAIL} or {PHONE}. Official communication is only from these channels.</p>
     </PolicyLayout>
   );
 }
@@ -232,14 +228,14 @@ export function WholesalePolicyPage() {
 
       <H2>3. Minimum Order Quantity</H2>
       <ul className="list-disc pl-5 space-y-1">
-        <li>Standard MOQ: 10 pieces per style</li>
-        <li>Export quality: MOQ 25 pieces per style</li>
-        <li>Bulk mixed packs: MOQ 50 pieces</li>
+        <li>Standard MOQ: from 1 piece per style</li>
+        <li>Export quality: flexible MOQ per style</li>
+        <li>Bulk mixed packs: volume discounts available</li>
       </ul>
 
       <H2>4. Pricing Tiers</H2>
       <ul className="list-disc pl-5 space-y-1">
-        <li>10–49 pcs: Factory wholesale price</li>
+        <li>1–49 pcs: Factory wholesale price</li>
         <li>50–99 pcs: Additional 5% discount</li>
         <li>100–499 pcs: Additional 10% discount</li>
         <li>500+ pcs: Custom pricing — contact sales team</li>

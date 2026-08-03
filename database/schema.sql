@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS products (
   brand_id INTEGER REFERENCES brands(id),
   retail_price DECIMAL(10,2) NOT NULL,
   wholesale_price DECIMAL(10,2) NOT NULL,
-  moq INTEGER DEFAULT 10,
+  moq INTEGER DEFAULT 1,
   sku VARCHAR(50) UNIQUE,
   fabric VARCHAR(100),
   fit VARCHAR(50),
@@ -59,6 +59,7 @@ CREATE TABLE IF NOT EXISTS products (
   is_new BOOLEAN DEFAULT false,
   is_bestseller BOOLEAN DEFAULT false,
   stock INTEGER DEFAULT 1000,
+  size_stock JSONB DEFAULT '{}',
   rating DECIMAL(2,1) DEFAULT 4.5,
   review_count INTEGER DEFAULT 0,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

@@ -34,7 +34,7 @@ function makeProduct(i, { name, category, brand, retail, fit, wash, fabric, size
     fabric: fabric || fabrics[i % fabrics.length],
     fit: fit || fits[i % fits.length],
     wash: wash || washes[i % washes.length],
-    moq: moq || (category === 'bulk-orders' ? 50 : category === 'export-quality' ? 25 : 10),
+    moq: moq || 1,
     sizes: sizes || (category === 'kids-jeans' ? '["4","6","8","10","12","14"]' : '["28","30","32","34","36","38","40"]'),
     featured: featured || false,
     is_new: is_new || false,
@@ -229,7 +229,7 @@ export function generateProducts() {
       wash,
       fit: 'Mixed',
       fabric: 'Mixed Cotton Blend',
-      moq: 50,
+      moq: 1,
       featured: true,
     }));
   }
@@ -251,7 +251,7 @@ export function generateProducts() {
       wash,
       fit: 'Straight',
       fabric: '100% Cotton Selvedge',
-      moq: 25,
+      moq: 1,
       featured: retail >= 5000,
       bestseller: retail === 4999,
     }));
@@ -263,7 +263,7 @@ export function generateProducts() {
     retail: 100,
     wash: 'Blue',
     fit: 'Regular',
-    moq: 10,
+    moq: 1,
     fabric: '100% Cotton',
   }));
 

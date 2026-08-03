@@ -12,8 +12,10 @@ import RegisterPage from './pages/RegisterPage';
 import WholesalePage from './pages/WholesalePage';
 import ContactPage from './pages/ContactPage';
 import AboutPage from './pages/AboutPage';
+import SizeChartPage from './pages/SizeChartPage';
 import SearchPage from './pages/SearchPage';
-import OrdersPage from './pages/OrdersPage';
+import AccountPage from './pages/AccountPage';
+import TrackOrderPage from './pages/TrackOrderPage';
 import CheckoutPage from './pages/CheckoutPage';
 import OrderSuccessPage from './pages/OrderSuccessPage';
 import PaymentProcessingPage from './pages/PaymentProcessingPage';
@@ -44,8 +46,11 @@ function Storefront() {
           <Route path="/wholesale" element={<WholesalePage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/about" element={<AboutPage />} />
+          <Route path="/size-chart" element={<SizeChartPage />} />
           <Route path="/search" element={<SearchPage />} />
-          <Route path="/orders" element={<OrdersPage />} />
+          <Route path="/account" element={<AccountPage />} />
+          <Route path="/orders" element={<AccountPage />} />
+          <Route path="/track-order" element={<TrackOrderPage />} />
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/shipping" element={<ShippingPage />} />

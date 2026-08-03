@@ -2,7 +2,7 @@
   <rect width="1400" height="500" fill="#1a2f4f"/>
   <rect x="0" y="0" width="1400" height="500" fill="url(#g)" opacity="0.3"/>
   <defs><linearGradient id="g" x1="0" y1="0" x2="1400" y2="500"><stop stop-color="#e11d48"/><stop offset="1" stop-color="#1a2f4f"/></linearGradient></defs>
-  <text x="120" y="220" font-family="system-ui,sans-serif" font-size="56" font-weight="700" fill="white">Wholesale from ¹580/pc</text>
-  <text x="120" y="290" font-family="system-ui,sans-serif" font-size="28" fill="white" opacity="0.85">MOQ 10 pieces · Pan India Shipping</text>
+  <text x="120" y="220" font-family="system-ui,sans-serif" font-size="56" font-weight="700" fill="white">Wholesale from ï¿½580/pc</text>
+  <text x="120" y="290" font-family="system-ui,sans-serif" font-size="28" fill="white" opacity="0.85">MOQ 10 pieces ï¿½ Pan India Shipping</text>
   <path d="M100 80 Q700 20 1300 80" stroke="#fb7185" stroke-width="2" stroke-dasharray="8 10" fill="none"/>
 </svg>

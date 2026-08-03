@@ -84,7 +84,7 @@ export default function PaymentProcessingPage() {
         <div className="bg-amber-50 border border-amber-100 rounded-xl p-4 mb-8 text-left">
           <p className="text-sm text-amber-900 leading-relaxed">
             <strong>Note:</strong> Order is not placed yet. For immediate orders, choose{' '}
-            <strong>Cash on Delivery (COD)</strong> at checkout (min ₹1,000) or contact us at{' '}
+            <strong>Cash on Delivery (COD)</strong> at checkout or contact us at{' '}
             <a href="tel:8424939262" className="text-[#e11d48] font-medium">8424939262</a>.
           </p>
         </div>

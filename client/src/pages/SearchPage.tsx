@@ -6,7 +6,6 @@ import { api, type Product } from '../lib/api';
 export default function SearchPage() {
   const [searchParams] = useSearchParams();
   const q = searchParams.get('q') || '';
-  const brand = searchParams.get('brand') || '';
   const featured = searchParams.get('featured') || '';
   const bestseller = searchParams.get('bestseller') || '';
   const hot = searchParams.get('hot') || '';
@@ -17,24 +16,21 @@ export default function SearchPage() {
     setLoading(true);
     const params: Record<string, string> = { limit: hot ? '60' : '40' };
     if (q) params.search = q;
-    if (brand) params.brand = brand;
     if (featured) params.featured = 'true';
     if (bestseller) params.bestseller = 'true';
     if (hot) params.hot = 'true';
     api.getProducts(params).then(setProducts).catch(() => {}).finally(() => setLoading(false));
-  }, [q, brand, featured, bestseller, hot]);
+  }, [q, featured, bestseller, hot]);
 
   const title = q
     ? `Results for "${q}"`
-    : brand
-      ? brand.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
-      : featured
-        ? 'Top Shelf'
-        : bestseller
-          ? 'Bestsellers'
-          : hot
-            ? 'Hot Products'
-            : 'All Products';
+    : featured
+      ? 'Top Shelf'
+      : bestseller
+        ? 'Bestsellers'
+        : hot
+          ? 'Hot Products'
+          : 'All Products';
 
   return (
     <div className="max-w-[1280px] mx-auto px-4 py-6 sm:py-8">

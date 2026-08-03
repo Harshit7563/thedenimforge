@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FALLBACK_IMAGE } from '../lib/images';
 
 interface Props {
@@ -11,6 +11,11 @@ interface Props {
 export default function SafeImage({ src, alt, className = '', loading = 'lazy' }: Props) {
   const [imgSrc, setImgSrc] = useState(src || FALLBACK_IMAGE);
   const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    setImgSrc(src || FALLBACK_IMAGE);
+    setFailed(false);
+  }, [src]);
 
   if (failed || !src) {
     return (

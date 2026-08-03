@@ -1,21 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ShieldCheck, Truck, AlertCircle, X } from 'lucide-react';
+import { ArrowLeft, ShieldCheck, Truck, Banknote } from 'lucide-react';
 import { api, formatPrice, type CartItem } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import SafeImage from '../components/SafeImage';
 import { FALLBACK_IMAGE } from '../lib/images';
 import Breadcrumbs from '../components/Breadcrumbs';
-
-const COD_MIN_AMOUNT = 1000;
-
-const PAYMENT_METHODS = [
-  { id: 'bank_transfer', label: 'Bank Transfer (NEFT/RTGS/IMPS)', desc: '50% advance for new buyers' },
-  { id: 'upi', label: 'UPI Payment', desc: 'Google Pay, PhonePe, Paytm' },
-  { id: 'cheque', label: 'Cheque', desc: 'For established wholesale buyers' },
-  { id: 'cod', label: 'Cash on Delivery (COD)', desc: `Pay cash when order arrives · Min order ${formatPrice(COD_MIN_AMOUNT)}`, minAmount: COD_MIN_AMOUNT },
-] as const;
 
 const INDIAN_STATES = [
   'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh', 'Goa', 'Gujarat',
@@ -52,7 +43,6 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(true);
   const [placing, setPlacing] = useState(false);
   const [error, setError] = useState('');
-  const [disabledPopup, setDisabledPopup] = useState(false);
   const [form, setForm] = useState<ShippingForm>({
     name: '', company: '', phone: '', email: '',
     address_line1: '', address_line2: '', city: '', state: 'Maharashtra',
@@ -83,21 +73,6 @@ export default function CheckoutPage() {
   const totalQty = items.reduce((s, i) => s + i.quantity, 0);
   const shipping = subtotal >= 25000 ? 0 : 199;
   const total = subtotal + shipping;
-  const codEligible = subtotal >= COD_MIN_AMOUNT;
-
-  useEffect(() => {
-    if (codEligible && form.payment_method !== 'cod') {
-      setForm((f) => ({ ...f, payment_method: 'cod' }));
-    }
-  }, [codEligible, form.payment_method]);
-
-  const handlePaymentTap = (methodId: string) => {
-    if (methodId === 'cod') {
-      if (codEligible) set('payment_method', 'cod');
-      return;
-    }
-    setDisabledPopup(true);
-  };
 
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -110,19 +85,11 @@ export default function CheckoutPage() {
       setError('Please enter a valid 6-digit pincode.');
       return;
     }
-    if (form.payment_method !== 'cod') {
-      setDisabledPopup(true);
-      return;
-    }
-    if (!codEligible) {
-      setError(`Cash on Delivery is only available on orders of ${formatPrice(COD_MIN_AMOUNT)} or above.`);
-      return;
-    }
     setPlacing(true);
     try {
       const order = await api.placeOrder({
-        shipping_address: form,
-        notes: form.notes || `Payment: ${form.payment_method}`,
+        shipping_address: { ...form, payment_method: 'cod' },
+        notes: form.notes || 'Payment: Cash on Delivery (COD)',
       });
       refresh();
       navigate('/order-success', { state: { order } });
@@ -210,61 +177,23 @@ export default function CheckoutPage() {
               </div>
             </section>
 
-            {/* Payment */}
+            {/* Payment — COD only */}
             <section className="bg-white border border-[#f0f0f0] rounded-2xl p-5">
               <h2 className="font-semibold mb-4">Payment Method</h2>
-              <div className="space-y-2">
-                {PAYMENT_METHODS.map((m) => {
-                  const isCod = m.id === 'cod';
-                  const codDisabled = isCod && !codEligible;
-                  const isDisabledMethod = !isCod;
-
-                  return (
-                    <div
-                      key={m.id}
-                      role="button"
-                      tabIndex={0}
-                      onClick={() => handlePaymentTap(m.id)}
-                      onKeyDown={(e) => e.key === 'Enter' && handlePaymentTap(m.id)}
-                      className={`flex items-start gap-3 p-3 border rounded-xl transition ${
-                        codDisabled
-                          ? 'border-[#e8e8e8] bg-gray-50 opacity-60 cursor-not-allowed'
-                          : isDisabledMethod
-                            ? 'border-[#e8e8e8] bg-gray-50/80 opacity-75 cursor-pointer hover:border-gray-300'
-                            : form.payment_method === m.id
-                              ? 'border-[#1a1a1a] bg-[#faf9f7] cursor-pointer'
-                              : 'border-[#e8e8e8] hover:border-gray-300 cursor-pointer'
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="payment"
-                        value={m.id}
-                        checked={form.payment_method === m.id}
-                        readOnly
-                        disabled={codDisabled || isDisabledMethod}
-                        className="mt-1 accent-[#1a1a1a] pointer-events-none"
-                      />
-                      <div className="flex-1">
-                        <p className="text-sm font-medium flex items-center gap-2">
-                          {m.label}
-                          {isDisabledMethod && (
-                            <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Unavailable</span>
-                          )}
-                        </p>
-                        <p className="text-xs text-gray-500">{m.desc}</p>
-                        {codDisabled && (
-                          <p className="text-xs text-[#e11d48] mt-1 font-medium">
-                            Add {formatPrice(COD_MIN_AMOUNT - subtotal)} more for COD (min {formatPrice(COD_MIN_AMOUNT)})
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
+              <div className="flex items-start gap-3 p-4 border border-[#1a1a1a] bg-[#faf9f7] rounded-xl">
+                <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-[#0f1724] text-white">
+                  <Banknote size={18} />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-[#1a1a1a]">Cash on Delivery (COD)</p>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    Pay cash when your order arrives. No online payment required.
+                  </p>
+                  <p className="text-xs text-green-700 font-medium mt-2">Selected</p>
+                </div>
               </div>
               <p className="text-xs text-gray-400 mt-3">
-                Only Cash on Delivery (COD) is active. Other payment methods coming soon.
+                Currently we accept Cash on Delivery only.
               </p>
             </section>
 
@@ -287,7 +216,7 @@ export default function CheckoutPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-medium line-clamp-2">{item.name}</p>
-                      <p className="text-[10px] text-gray-400">{item.size} · {item.color} · ×{item.quantity}</p>
+                      <p className="text-[10px] text-gray-400">Size {item.size} · ×{item.quantity}</p>
                     </div>
                     <p className="text-xs font-semibold shrink-0">{formatPrice(parseFloat(item.wholesale_price) * item.quantity)}</p>
                   </div>
@@ -305,7 +234,7 @@ export default function CheckoutPage() {
 
               <button
                 type="submit"
-                disabled={placing || !codEligible}
+                disabled={placing}
                 className="w-full mt-5 h-12 bg-[#1a1a1a] text-white rounded-full font-semibold hover:bg-[#333] transition disabled:opacity-50 hidden md:flex items-center justify-center gap-2"
               >
                 {submitLabel}
@@ -325,45 +254,11 @@ export default function CheckoutPage() {
             <p className="text-xs text-gray-500">Total ({totalQty} pcs)</p>
             <p className="text-xl font-bold text-[#1a1a1a]">{formatPrice(total)}</p>
           </div>
-          <button type="submit" form="checkout-form" disabled={placing || !codEligible} className="flex-1 max-w-[200px] h-11 bg-[#1a1a1a] text-white rounded-full font-semibold text-sm disabled:opacity-50">
+          <button type="submit" form="checkout-form" disabled={placing} className="flex-1 max-w-[200px] h-11 bg-[#1a1a1a] text-white rounded-full font-semibold text-sm disabled:opacity-50">
             {submitLabel}
           </button>
         </div>
       </div>
-
-      {/* Disabled payment popup */}
-      {disabledPopup && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setDisabledPopup(false)}>
-          <div
-            className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl relative"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              type="button"
-              onClick={() => setDisabledPopup(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-[#1a1a1a]"
-              aria-label="Close"
-            >
-              <X size={20} />
-            </button>
-            <div className="w-14 h-14 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-4">
-              <AlertCircle size={28} className="text-amber-600" />
-            </div>
-            <h3 className="text-lg font-bold text-[#1a1a1a] text-center mb-2">Function Disabled</h3>
-            <p className="text-sm text-gray-600 text-center leading-relaxed mb-6">
-              This function is disabled due to technical reasons. Please use{' '}
-              <strong>Cash on Delivery (COD)</strong> to place your order.
-            </p>
-            <button
-              type="button"
-              onClick={() => setDisabledPopup(false)}
-              className="w-full h-11 bg-[#1a1a1a] text-white rounded-full font-semibold text-sm hover:bg-[#333] transition"
-            >
-              OK, Got It
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

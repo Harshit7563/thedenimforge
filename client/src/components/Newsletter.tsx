@@ -20,13 +20,14 @@ export default function Newsletter() {
   };
 
   return (
-    <section className="bg-[#faf9f7] border-t border-[#e8e8e8] py-10 sm:py-12">
-      <div className="max-w-lg mx-auto px-4 text-center">
-        <h3 className="text-base sm:text-lg font-bold text-[#1a1a1a] mb-2 tracking-tight">
-          Be the first to hear about all things Denim Forge
+    <section className="border-t border-[#e4e7ec] bg-white py-14 sm:py-16">
+      <div className="max-w-xl mx-auto px-4 text-center">
+        <p className="text-[11px] tracking-[0.28em] uppercase text-[#c41e3a] font-semibold mb-3">Newsletter</p>
+        <h3 className="font-display text-2xl sm:text-3xl font-bold text-[#0f1724] mb-3">
+          Stay ahead of the drop
         </h3>
-        <p className="text-xs sm:text-sm text-gray-500 mb-5 leading-relaxed">
-          Exclusive wholesale offers and latest denim updates, straight to your inbox
+        <p className="text-sm text-[#5c6775] mb-7 leading-relaxed">
+          Wholesale offers and new denim arrivals, straight to your inbox.
         </p>
         <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2">
           <input
@@ -35,17 +36,17 @@ export default function Newsletter() {
             placeholder="Enter your email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="flex-1 h-11 border border-[#e8e8e8] rounded-full px-5 text-sm bg-white focus:outline-none focus:border-[#1a1a1a] transition"
+            className="flex-1 h-12 border border-[#e4e7ec] px-4 text-sm bg-[#f7f8fa] focus:outline-none focus:border-[#0f1724] focus:bg-white transition"
           />
           <button
             type="submit"
             disabled={loading}
-            className="h-11 bg-[#1a1a1a] text-white px-8 rounded-full text-sm font-semibold hover:bg-[#333] transition disabled:opacity-50 shrink-0"
+            className="h-12 bg-[#0f1724] text-white px-8 text-sm font-semibold hover:bg-[#c41e3a] transition disabled:opacity-50 shrink-0"
           >
             {loading ? 'Sending...' : 'Subscribe'}
           </button>
         </form>
-        {msg && <p className="text-sm text-green-600 mt-3">{msg}</p>}
+        {msg && <p className="text-sm text-green-700 mt-3">{msg}</p>}
       </div>
     </section>
   );

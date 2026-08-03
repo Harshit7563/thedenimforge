@@ -23,7 +23,7 @@ export const BANNER_DOWNLOADS = [
 export const BANNER_DATA = [
   {
     title: 'Wholesale Denim Starts at ₹100/pc',
-    subtitle: 'MOQ 10 pieces | 70+ jeans styles in stock',
+    subtitle: 'MOQ 1 piece | 70+ jeans styles in stock',
     image_url: BANNER_SLIDER_IMAGES[0],
     link_url: '/category/bulk-orders',
     sort_order: 1,

@@ -116,9 +116,14 @@ router.post('/products', adminMiddleware, async (req, res) => {
       ? d.images
       : ['/images/products/jeans-mens-blue-1.jpg'];
 
+    const sizeStock = d.size_stock && typeof d.size_stock === 'object' ? d.size_stock : {};
+    const sizes = Array.isArray(d.sizes) && d.sizes.length
+      ? d.sizes
+      : Object.keys(sizeStock);
+
     const result = await pool.query(
-      `INSERT INTO products (name, slug, description, short_description, category_id, brand_id, retail_price, wholesale_price, moq, sku, fabric, fit, wash, images, sizes, colors, is_featured, is_new, is_bestseller, stock)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20) RETURNING *`,
+      `INSERT INTO products (name, slug, description, short_description, category_id, brand_id, retail_price, wholesale_price, moq, sku, fabric, fit, wash, images, sizes, colors, is_featured, is_new, is_bestseller, stock, size_stock)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21) RETURNING *`,
       [
         d.name.trim(),
         slug,
@@ -128,18 +133,19 @@ router.post('/products', adminMiddleware, async (req, res) => {
         d.brand_id || null,
         d.retail_price || d.wholesale_price,
         d.wholesale_price,
-        d.moq || 10,
+        d.moq ?? 1,
         sku,
         d.fabric || '',
         d.fit || '',
         d.wash || '',
         JSON.stringify(images),
-        JSON.stringify(d.sizes || ['28', '30', '32', '34', '36', '38', '40']),
-        JSON.stringify(d.colors || ['Blue', 'Black']),
+        JSON.stringify(sizes.length ? sizes : ['28', '30', '32', '34', '36', '38', '40']),
+        JSON.stringify(d.colors || [d.wash || 'Blue']),
         d.is_featured || false,
         d.is_new || false,
         d.is_bestseller || false,
-        d.stock || 1000,
+        d.stock ?? (Object.values(sizeStock).reduce((s, n) => s + Number(n || 0), 0) || 0),
+        JSON.stringify(sizeStock),
       ]
     );
     res.status(201).json(result.rows[0]);
@@ -151,13 +157,48 @@ router.post('/products', adminMiddleware, async (req, res) => {
 router.put('/products/:id', adminMiddleware, async (req, res) => {
   try {
     const d = req.body;
+    if (!d.name?.trim()) return res.status(400).json({ error: 'Product name is required' });
+    if (!d.category_id) return res.status(400).json({ error: 'Category is required' });
+
+    const slug = (d.slug || d.name)
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
+    const sizeStock = d.size_stock && typeof d.size_stock === 'object' ? d.size_stock : {};
+    const sizes = Array.isArray(d.sizes) && d.sizes.length ? d.sizes : Object.keys(sizeStock);
+    const stock = d.stock ?? Object.values(sizeStock).reduce((s, n) => s + Number(n || 0), 0);
+
     const result = await pool.query(
       `UPDATE products SET name=$1, slug=$2, description=$3, short_description=$4, category_id=$5, brand_id=$6,
        retail_price=$7, wholesale_price=$8, moq=$9, sku=$10, fabric=$11, fit=$12, wash=$13, images=$14,
-       sizes=$15, colors=$16, is_featured=$17, is_new=$18, is_bestseller=$19, stock=$20
-       WHERE id=$21 RETURNING *`,
-      [d.name, d.slug, d.description, d.short_description, d.category_id, d.brand_id, d.retail_price, d.wholesale_price, d.moq, d.sku, d.fabric, d.fit, d.wash, JSON.stringify(d.images), JSON.stringify(d.sizes), JSON.stringify(d.colors), d.is_featured, d.is_new, d.is_bestseller, d.stock, req.params.id]
+       sizes=$15, colors=$16, is_featured=$17, is_new=$18, is_bestseller=$19, stock=$20, size_stock=$21
+       WHERE id=$22 RETURNING *`,
+      [
+        d.name,
+        slug,
+        d.description,
+        d.short_description,
+        d.category_id,
+        d.brand_id || null,
+        d.retail_price,
+        d.wholesale_price,
+        d.moq,
+        d.sku,
+        d.fabric,
+        d.fit,
+        d.wash,
+        JSON.stringify(d.images || []),
+        JSON.stringify(sizes),
+        JSON.stringify(d.colors || [d.wash || 'Blue']),
+        d.is_featured,
+        d.is_new,
+        d.is_bestseller,
+        stock,
+        JSON.stringify(sizeStock),
+        req.params.id,
+      ]
     );
+    if (!result.rows[0]) return res.status(404).json({ error: 'Product not found' });
     res.json(result.rows[0]);
   } catch (err) {
     res.status(500).json({ error: err.message });

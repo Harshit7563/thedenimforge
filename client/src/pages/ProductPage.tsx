@@ -13,27 +13,12 @@ import ProductCard from '../components/ProductCard';
 import Section from '../components/Section';
 import SafeImage from '../components/SafeImage';
 import { FALLBACK_IMAGE } from '../lib/images';
+import { SIZE_CHART, MENS_SIZE_CHART, WOMENS_SIZE_CHART, KIDS_SIZE_CHART } from '../lib/sizeChart';
 
 function parseJsonField<T>(val: T | string, fallback: T): T {
   if (Array.isArray(val)) return val as T;
   try { return JSON.parse(val as string); } catch { return fallback; }
 }
-
-const SIZE_CHART = [
-  { size: '28', waist: '28"', hip: '36"', length: '40"' },
-  { size: '30', waist: '30"', hip: '38"', length: '40"' },
-  { size: '32', waist: '32"', hip: '40"', length: '41"' },
-  { size: '34', waist: '34"', hip: '42"', length: '41"' },
-  { size: '36', waist: '36"', hip: '44"', length: '42"' },
-  { size: '38', waist: '38"', hip: '46"', length: '42"' },
-  { size: '40', waist: '40"', hip: '48"', length: '43"' },
-];
-
-const COLOR_MAP: Record<string, string> = {
-  Blue: '#3b5998', Black: '#1a1a1a', Grey: '#9ca3af', Gray: '#9ca3af',
-  'Light Blue': '#93c5fd', 'Dark Blue': '#1e3a5f', 'Olive Green': '#6b7c3e',
-  Charcoal: '#4b5563', Indigo: '#4338ca',
-};
 
 type Tab = 'description' | 'specs' | 'sizechart' | 'shipping';
 
@@ -63,9 +48,8 @@ export default function ProductPage() {
   const [product, setProduct] = useState<Product | null>(null);
   const [related, setRelated] = useState<Product[]>([]);
   const [notFound, setNotFound] = useState(false);
-  const [quantity, setQuantity] = useState(10);
+  const [quantity, setQuantity] = useState(1);
   const [size, setSize] = useState('32');
-  const [color, setColor] = useState('Blue');
   const [activeImage, setActiveImage] = useState(0);
   const [lightbox, setLightbox] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>('description');
@@ -80,10 +64,8 @@ export default function ProductPage() {
       .then((p) => {
         setProduct(p);
         const sizes = parseJsonField(p.sizes, ['32']);
-        const colors = parseJsonField(p.colors, ['Blue']);
         setSize(sizes[0] || '32');
-        setColor(colors[0] || 'Blue');
-        setQuantity(p.moq || 10);
+        setQuantity(p.moq || 1);
         setActiveImage(0);
         if (p.category_slug) {
           api.getProducts({ category: p.category_slug, limit: '5' })
@@ -104,7 +86,7 @@ export default function ProductPage() {
     setAdding(true);
     setMsg('');
     try {
-      await api.addToCart({ product_id: product.id, quantity, size, color });
+      await api.addToCart({ product_id: product.id, quantity, size, color: product.wash || 'Blue' });
       increment();
       refresh();
       setMsg('Added to cart successfully!');
@@ -113,7 +95,7 @@ export default function ProductPage() {
       setMsg(err instanceof Error ? err.message : 'Failed to add to cart');
     }
     setAdding(false);
-  }, [product, user, quantity, size, color, navigate, increment, refresh]);
+  }, [product, user, quantity, size, navigate, increment, refresh]);
 
   const handleShare = async () => {
     const url = window.location.href;
@@ -142,7 +124,6 @@ export default function ProductPage() {
 
   const images = parseJsonField(product.images, [FALLBACK_IMAGE]);
   const sizes = parseJsonField(product.sizes, ['32']);
-  const colors = parseJsonField(product.colors, ['Blue']);
 
   const btnClass = (active: boolean) =>
     `min-w-[44px] h-10 px-3.5 border rounded-lg text-sm font-medium transition ${
@@ -157,11 +138,21 @@ export default function ProductPage() {
   ];
 
   const bulkTiers = [
-    { range: `${product.moq}–49 pcs`, price: wholesalePrice, label: 'Standard' },
-    { range: '50–99 pcs', price: Math.round(wholesalePrice * 0.95), label: '5% Off' },
-    { range: '100–499 pcs', price: Math.round(wholesalePrice * 0.9), label: '10% Off' },
-    { range: '500+ pcs', price: null, label: 'Custom Price' },
+    { range: `${product.moq}+ pcs`, price: wholesalePrice, label: 'Wholesale' },
+    { range: '50+ pcs', price: null, label: 'Volume quote' },
+    { range: '100+ pcs', price: null, label: 'Bulk quote' },
+    { range: '500+ pcs', price: null, label: 'Custom / export' },
   ];
+
+  const chartForProduct = (() => {
+    const slug = product.category_slug || '';
+    if (slug.includes('kids')) return KIDS_SIZE_CHART;
+    if (slug.includes('women')) return WOMENS_SIZE_CHART;
+    if (slug.includes('mens') || slug.includes('slim') || slug.includes('boot') || slug.includes('regular') || slug.includes('distress')) {
+      return MENS_SIZE_CHART;
+    }
+    return SIZE_CHART;
+  })();
 
   return (
     <div className="pb-24 md:pb-10">
@@ -224,9 +215,11 @@ export default function ProductPage() {
           <div>
             <div className="flex items-start justify-between gap-3">
               <div>
-                <Link to={`/search?brand=${product.brand_slug}`} className="text-xs text-[#e11d48] font-semibold uppercase tracking-wide hover:underline">
-                  {product.brand_name}
-                </Link>
+                {product.category_name && (
+                  <p className="text-xs text-[#e11d48] font-semibold uppercase tracking-wide">
+                    {product.category_name}
+                  </p>
+                )}
                 <h1 className="text-xl sm:text-2xl lg:text-[28px] font-bold text-[#1a1a1a] mt-1 mb-2 leading-snug tracking-tight">
                   {product.name}
                 </h1>
@@ -291,23 +284,24 @@ export default function ProductPage() {
             {/* Selectors */}
             <div className="space-y-4 mb-5">
               <div>
-                <label className="text-sm font-semibold mb-2 block">Select Size</label>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-sm font-semibold">Select Size</label>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('sizechart')}
+                    className="text-xs font-semibold text-[#c41e3a] hover:underline inline-flex items-center gap-1"
+                  >
+                    <Ruler size={13} /> Size Chart
+                  </button>
+                </div>
                 <div className="flex flex-wrap gap-2">
                   {sizes.map((s: string) => (
                     <button key={s} type="button" onClick={() => setSize(s)} className={btnClass(size === s)}>{s}</button>
                   ))}
                 </div>
-              </div>
-              <div>
-                <label className="text-sm font-semibold mb-2 block">Select Color</label>
-                <div className="flex flex-wrap gap-2">
-                  {colors.map((c: string) => (
-                    <button key={c} type="button" onClick={() => setColor(c)} className={`flex items-center gap-2 h-10 px-3 border rounded-lg text-sm font-medium transition ${color === c ? 'border-[#1a1a1a] bg-[#1a1a1a] text-white' : 'border-[#e8e8e8] hover:border-[#1a1a1a]'}`}>
-                      <span className="w-4 h-4 rounded-full border border-white/30 shrink-0" style={{ background: COLOR_MAP[c] || '#9ca3af' }} />
-                      {c}
-                    </button>
-                  ))}
-                </div>
+                <Link to="/size-chart" className="mt-2 inline-block text-xs text-[#5c6775] hover:text-[#0f1724] underline underline-offset-2">
+                  View full size chart (Men / Women / Kids)
+                </Link>
               </div>
               <div>
                 <label className="text-sm font-semibold mb-2 block">Quantity <span className="font-normal text-gray-400">(min {product.moq})</span></label>
@@ -392,7 +386,6 @@ export default function ProductPage() {
                   <table className="w-full text-sm">
                     <tbody>
                       {[
-                        ['Brand', product.brand_name],
                         ['Category', product.category_name],
                         ['Fit', product.fit],
                         ['Fabric', product.fabric],
@@ -400,7 +393,6 @@ export default function ProductPage() {
                         ['SKU', product.sku || 'N/A'],
                         ['MOQ', `${product.moq} pieces`],
                         ['Available Sizes', sizes.join(', ')],
-                        ['Available Colors', colors.join(', ')],
                       ].map(([k, v]) => (
                         <tr key={k} className="border-b border-[#f0f0f0]">
                           <td className="py-2.5 font-medium text-[#1a1a1a] w-2/5">{k}</td>
@@ -412,35 +404,45 @@ export default function ProductPage() {
                 )}
                 {activeTab === 'sizechart' && (
                   <div className="overflow-x-auto">
-                    <table className="w-full text-sm min-w-[300px]">
+                    <table className="w-full text-sm min-w-[360px]">
                       <thead>
                         <tr className="bg-[#faf9f7]">
                           <th className="py-2.5 px-3 text-left font-semibold">Size</th>
                           <th className="py-2.5 px-3 text-left font-semibold">Waist</th>
                           <th className="py-2.5 px-3 text-left font-semibold">Hip</th>
+                          <th className="py-2.5 px-3 text-left font-semibold">Inseam</th>
                           <th className="py-2.5 px-3 text-left font-semibold">Length</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {SIZE_CHART.filter((r) => sizes.includes(r.size)).map((row) => (
+                        {(chartForProduct.filter((r) => sizes.includes(r.size)).length
+                          ? chartForProduct.filter((r) => sizes.includes(r.size))
+                          : chartForProduct
+                        ).map((row) => (
                           <tr key={row.size} className={`border-b border-[#f0f0f0] ${size === row.size ? 'bg-[#faf9f7] font-medium' : ''}`}>
                             <td className="py-2.5 px-3">{row.size}</td>
                             <td className="py-2.5 px-3">{row.waist}</td>
                             <td className="py-2.5 px-3">{row.hip}</td>
+                            <td className="py-2.5 px-3">{row.inseam}</td>
                             <td className="py-2.5 px-3">{row.length}</td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
-                    <p className="text-xs text-gray-400 mt-3">Measurements are approximate. Contact us for exact specs.</p>
+                    <p className="text-xs text-gray-400 mt-3">
+                      Measurements are approximate.{' '}
+                      <Link to="/size-chart" className="text-[#c41e3a] font-medium hover:underline">
+                        Full size chart →
+                      </Link>
+                    </p>
                   </div>
                 )}
                 {activeTab === 'shipping' && (
                   <div className="space-y-3">
                     <p><strong className="text-[#1a1a1a]">Delivery:</strong> 3–7 business days pan India. Bulk orders (50+ pcs) dispatched in 7–10 days.</p>
-                    <p><strong className="text-[#1a1a1a]">Shipping:</strong> Free on orders above ₹25,000. Otherwise calculated by weight & location.</p>
+                    <p><strong className="text-[#1a1a1a]">Shipping:</strong> ₹199 flat · Free on orders above ₹25,000.</p>
                     <p><strong className="text-[#1a1a1a]">Returns:</strong> Defective items can be returned within 7 days. Sample policy available for new buyers.</p>
-                    <p><strong className="text-[#1a1a1a]">Payment:</strong> 50% advance for new buyers. UPI, bank transfer & NEFT accepted.</p>
+                    <p><strong className="text-[#1a1a1a]">Payment:</strong> Cash on Delivery (COD) only.</p>
                   </div>
                 )}
               </div>
@@ -465,7 +467,7 @@ export default function ProductPage() {
         <div className="flex items-center gap-3">
           <div className="shrink-0 flex-1">
             <p className="text-lg font-bold text-[#1a1a1a]">{formatPrice(totalPrice)}</p>
-            <p className="text-[10px] text-gray-400">{quantity} pcs · {size} · {color}</p>
+            <p className="text-[10px] text-gray-400">{quantity} pcs · Size {size}</p>
           </div>
           <button
             type="button"

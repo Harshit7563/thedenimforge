@@ -30,7 +30,7 @@ export default function ContactPage() {
             <p className="text-sm text-gray-600 mt-2 leading-relaxed">
               Shop No 22, Building Number 2, B Wing,<br />
               Navkar Bahar, Ghanshyam Gupte Road,<br />
-              Vishnu Nagar, Dombavali West 421202
+              Vishnu Nagar, Dombivli West 421202
             </p>
           </div>
         </div>
@@ -40,7 +40,7 @@ export default function ContactPage() {
         <h2 className="text-xl font-bold text-denim mb-6">Frequently Asked Questions</h2>
         <div className="space-y-4">
           {[
-            { q: 'What is the minimum order quantity (MOQ)?', a: 'Our standard MOQ is 10 pieces per style. Bulk orders of 50+ pieces receive additional discounts.' },
+            { q: 'What is the minimum order quantity (MOQ)?', a: 'Our MOQ starts from just 1 piece per style. Larger bulk orders receive additional discounts.' },
             { q: 'Do you offer samples?', a: 'Yes, we offer free samples on bulk orders of 100+ pieces. Sample charges apply for smaller orders.' },
             { q: 'What is the delivery timeline?', a: 'Standard orders are dispatched within 3-5 business days. Bulk orders may take 7-10 business days.' },
             { q: 'Do you ship internationally?', a: 'Yes, we export to multiple countries. Contact us for export pricing and logistics.' },

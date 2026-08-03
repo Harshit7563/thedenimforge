@@ -3,5 +3,4 @@
   <rect x="50" y="35" width="100" height="130" rx="6" fill="#6b8cb8"/>
   <path d="M65 70 L75 100 L85 85 L95 110 L105 90" stroke="#1e3a5f" stroke-width="3" fill="none"/>
   <path d="M115 70 L125 105" stroke="#1e3a5f" stroke-width="3"/>
-  <text x="100" y="185" text-anchor="middle" font-family="system-ui" font-size="10" font-weight="700" fill="#1e3a5f">DISTRESSED</text>
 </svg>

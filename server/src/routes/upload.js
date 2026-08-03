@@ -21,7 +21,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({
   storage,
-  limits: { fileSize: 5 * 1024 * 1024, files: 8 },
+  limits: { fileSize: 5 * 1024 * 1024, files: 4 },
   fileFilter: (_req, file, cb) => {
     const ok = /\.(jpe?g|png|webp|gif)$/i.test(file.originalname) || /^image\//.test(file.mimetype);
     if (ok) cb(null, true);
@@ -31,7 +31,7 @@ const upload = multer({
 
 const router = Router();
 
-router.post('/products', adminMiddleware, upload.array('images', 8), (req, res) => {
+router.post('/products', adminMiddleware, upload.array('images', 4), (req, res) => {
   try {
     const files = req.files || [];
     if (!files.length) return res.status(400).json({ error: 'No images uploaded' });

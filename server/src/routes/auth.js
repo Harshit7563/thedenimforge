@@ -14,7 +14,7 @@ router.post('/register', async (req, res) => {
     const result = await pool.query(
       `INSERT INTO users (email, password_hash, first_name, last_name, phone, company_name, is_wholesale)
        VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING id, email, first_name, last_name, is_wholesale`,
-      [email, hash, first_name, last_name, phone, company_name, is_wholesale || false]
+      [email, hash, first_name, last_name, phone, company_name, true]
     );
     const user = result.rows[0];
     const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '7d' });
@@ -48,6 +48,25 @@ router.get('/me', authMiddleware, async (req, res) => {
     const result = await pool.query(
       'SELECT id, email, first_name, last_name, phone, company_name, is_wholesale FROM users WHERE id = $1',
       [req.user.id]
+    );
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.put('/me', authMiddleware, async (req, res) => {
+  try {
+    const { first_name, last_name, phone, company_name } = req.body;
+    const result = await pool.query(
+      `UPDATE users SET
+         first_name = COALESCE($1, first_name),
+         last_name = COALESCE($2, last_name),
+         phone = COALESCE($3, phone),
+         company_name = COALESCE($4, company_name)
+       WHERE id = $5
+       RETURNING id, email, first_name, last_name, phone, company_name, is_wholesale`,
+      [first_name, last_name, phone, company_name, req.user.id]
     );
     res.json(result.rows[0]);
   } catch (err) {

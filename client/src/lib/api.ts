@@ -44,8 +44,6 @@ export interface Product {
   sku?: string;
   category_name: string;
   category_slug: string;
-  brand_name: string;
-  brand_slug: string;
   stock?: number;
 }
 
@@ -54,12 +52,6 @@ export interface Category {
   name: string;
   slug: string;
   description: string;
-}
-
-export interface Brand {
-  id: number;
-  name: string;
-  slug: string;
 }
 
 export interface Banner {
@@ -87,17 +79,27 @@ export const api = {
   },
   getProduct: (slug: string) => request<Product>(`/products/${slug}`),
   getCategories: () => request<Category[]>('/categories'),
-  getBrands: () => request<Brand[]>('/brands'),
   getBanners: () => request<Banner[]>('/banners'),
   login: (email: string, password: string) =>
     request<{ user: User; token: string }>('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) }),
   register: (data: Record<string, unknown>) =>
     request<{ user: User; token: string }>('/auth/register', { method: 'POST', body: JSON.stringify(data) }),
   getMe: () => request<User>('/auth/me'),
+  updateProfile: (data: Partial<User>) =>
+    request<User>('/auth/me', { method: 'PUT', body: JSON.stringify(data) }),
   getCart: () => request<CartItem[]>('/cart'),
   addToCart: (data: { product_id: string; quantity: number; size: string; color: string }) =>
     request('/cart', { method: 'POST', body: JSON.stringify(data) }),
   removeFromCart: (id: string) => request(`/cart/${id}`, { method: 'DELETE' }),
+  getOrders: () => request<OrderSummary[]>('/orders'),
+  getOrder: (id: string) => request<OrderDetail>(`/orders/${id}`),
+  trackOrder: (orderNumber: string) => request<OrderDetail>(`/orders/track/${orderNumber}`),
+  getAddresses: () => request<ShippingAddress[]>('/addresses'),
+  createAddress: (data: Partial<ShippingAddress>) =>
+    request<ShippingAddress>('/addresses', { method: 'POST', body: JSON.stringify(data) }),
+  updateAddress: (id: string, data: Partial<ShippingAddress>) =>
+    request<ShippingAddress>(`/addresses/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteAddress: (id: string) => request(`/addresses/${id}`, { method: 'DELETE' }),
   placeOrder: (data: { shipping_address?: object; notes?: string }) =>
     request<{ order_number: string; id: string }>('/orders', { method: 'POST', body: JSON.stringify(data) }),
   submitInquiry: (data: Record<string, unknown>) =>
@@ -105,6 +107,39 @@ export const api = {
   subscribeNewsletter: (email: string) =>
     request('/newsletter', { method: 'POST', body: JSON.stringify({ email }) }),
 };
+
+export interface ShippingAddress {
+  id: string;
+  name: string;
+  phone: string;
+  company?: string;
+  address_line1: string;
+  address_line2?: string;
+  city: string;
+  state: string;
+  pincode: string;
+  is_default: boolean;
+}
+
+export interface OrderSummary {
+  id: string;
+  order_number: string;
+  status: string;
+  total_amount: string;
+  created_at: string;
+  shipping_address?: Record<string, string>;
+}
+
+export interface OrderDetail extends OrderSummary {
+  notes?: string;
+  items: Array<{
+    product_name: string;
+    quantity: number;
+    unit_price: string;
+    size: string;
+    color: string;
+  }>;
+}
 
 export interface CartItem {
   id: string;

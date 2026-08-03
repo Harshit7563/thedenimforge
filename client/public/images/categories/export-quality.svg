@@ -3,6 +3,4 @@
   <rect x="40" y="30" width="120" height="140" rx="6" fill="#0f172a" stroke="#c9a227" stroke-width="2"/>
   <path d="M60 55h80M60 75h60" stroke="#334155" stroke-width="2"/>
   <circle cx="100" cy="110" r="20" fill="none" stroke="#c9a227" stroke-width="2"/>
-  <text x="100" y="115" text-anchor="middle" font-family="system-ui" font-size="10" font-weight="700" fill="#c9a227">EXPORT</text>
-  <text x="100" y="185" text-anchor="middle" font-family="system-ui" font-size="9" font-weight="700" fill="#9ca3af">EXPORT QUALITY</text>
 </svg>
