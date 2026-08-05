@@ -16,9 +16,9 @@ import adminRoutes from './routes/admin.js';
 import uploadRoutes from './routes/upload.js';
 import addressRoutes from './routes/addresses.js';
 
-dotenv.config();
-
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: path.join(__dirname, '../.env') });
+
 const app = express();
 const PORT = process.env.PORT || 4000;
 

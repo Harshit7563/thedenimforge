@@ -19,6 +19,9 @@ export async function adminMiddleware(req, res, next) {
   if (!header?.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
+  if (!process.env.JWT_SECRET) {
+    return res.status(500).json({ error: 'Server JWT_SECRET missing' });
+  }
   try {
     req.user = jwt.verify(header.split(' ')[1], process.env.JWT_SECRET);
     const result = await pool.query('SELECT is_admin FROM users WHERE id = $1', [req.user.id]);
@@ -26,7 +29,11 @@ export async function adminMiddleware(req, res, next) {
       return res.status(403).json({ error: 'Admin access required' });
     }
     next();
-  } catch {
-    res.status(401).json({ error: 'Invalid token' });
+  } catch (err) {
+    if (err?.name === 'JsonWebTokenError' || err?.name === 'TokenExpiredError') {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+    console.error('adminMiddleware:', err);
+    res.status(500).json({ error: 'Auth check failed' });
   }
 }

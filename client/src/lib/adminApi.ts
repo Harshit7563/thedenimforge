@@ -4,6 +4,10 @@ function adminToken() {
   return localStorage.getItem('admin_token');
 }
 
+function clearAdminSession() {
+  localStorage.removeItem('admin_token');
+}
+
 async function adminRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -15,6 +19,10 @@ async function adminRequest<T>(path: string, options: RequestInit = {}): Promise
   const res = await fetch(`${API}/admin${path}`, { ...options, headers });
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: 'Request failed' }));
+    if (res.status === 401) {
+      clearAdminSession();
+      throw new Error('Session expired — please login again at /admin/login');
+    }
     throw new Error(err.error || 'Request failed');
   }
   return res.json();
@@ -46,6 +54,10 @@ export const adminApi = {
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({ error: 'Upload failed' }));
+      if (res.status === 401) {
+        clearAdminSession();
+        throw new Error('Session expired — please login again at /admin/login');
+      }
       throw new Error(err.error || 'Upload failed');
     }
     return res.json() as Promise<{ urls: string[] }>;
