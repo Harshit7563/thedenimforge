@@ -15,7 +15,13 @@ router.get('/', async (req, res) => {
     const params = [];
     let idx = 1;
 
-    if (category) { query += ` AND c.slug = $${idx++}`; params.push(category); }
+    if (category) {
+      // What's New + Bulk Orders show every product automatically
+      if (category !== 'new-arrivals' && category !== 'bulk-orders') {
+        query += ` AND c.slug = $${idx++}`;
+        params.push(category);
+      }
+    }
     if (brand) { query += ` AND b.slug = $${idx++}`; params.push(brand); }
     if (featured === 'true') query += ` AND p.is_featured = true`;
     if (is_new === 'true') query += ` AND p.is_new = true`;

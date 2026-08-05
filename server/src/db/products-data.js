@@ -137,7 +137,7 @@ export function generateProducts() {
   for (const [label, wash, retail] of slimFit) {
     products.push(makeProduct(i++, {
       name: label,
-      category: 'slim-fit',
+      category: 'mens-jeans',
       retail,
       wash,
       fit: 'Slim',
@@ -156,7 +156,7 @@ export function generateProducts() {
   for (const [label, wash, retail] of regularFit) {
     products.push(makeProduct(i++, {
       name: label,
-      category: 'regular-fit',
+      category: 'mens-jeans',
       retail,
       wash,
       fit: 'Regular',
@@ -173,7 +173,7 @@ export function generateProducts() {
   for (const [label, wash, retail] of bootcut) {
     products.push(makeProduct(i++, {
       name: label,
-      category: 'bootcut',
+      category: 'mens-jeans',
       retail,
       wash,
       fit: 'Bootcut',
@@ -190,7 +190,7 @@ export function generateProducts() {
   for (const [label, wash, retail] of distressed) {
     products.push(makeProduct(i++, {
       name: label,
-      category: 'distressed',
+      category: 'mens-jeans',
       retail,
       wash,
       fit: 'Slim',
@@ -246,7 +246,7 @@ export function generateProducts() {
   for (const [label, wash, retail] of exportGrade) {
     products.push(makeProduct(i++, {
       name: label,
-      category: 'export-quality',
+      category: 'bulk-orders',
       retail,
       wash,
       fit: 'Straight',

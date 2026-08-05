@@ -124,6 +124,7 @@ h1, h2, h3, .font-display {
   padding: 0.75rem 1.5rem;
   border-radius: 2px;
   transition: background 0.2s ease, transform 0.2s ease;
+  min-height: 44px;
 }
 .btn-primary:hover {
   background: var(--color-forge);
@@ -140,6 +141,7 @@ h1, h2, h3, .font-display {
   padding: 0.75rem 1.5rem;
   border-radius: 2px;
   transition: background 0.2s ease, border-color 0.2s ease;
+  min-height: 44px;
 }
 .btn-ghost:hover {
   background: rgba(255, 255, 255, 0.1);
@@ -154,8 +156,18 @@ input, select, textarea, button {
   padding-bottom: max(12px, env(safe-area-inset-bottom));
 }
 
+.touch-manipulation {
+  touch-action: manipulation;
+}
+
 @media (max-width: 640px) {
   input, select, textarea {
     font-size: 16px;
+  }
+
+  .btn-primary,
+  .btn-ghost {
+    padding: 0.7rem 1.1rem;
+    font-size: 0.8125rem;
   }
 }

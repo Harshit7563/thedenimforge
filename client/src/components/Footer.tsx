@@ -21,18 +21,17 @@ export default function Footer() {
               <li><Link to="/size-chart" className="hover:text-white transition">Size Chart</Link></li>
               <li><Link to="/wholesale" className="hover:text-white transition">Wholesale Program</Link></li>
               <li><Link to="/contact" className="hover:text-white transition">Contact</Link></li>
-              <li><Link to="/category/new-arrivals" className="hover:text-white transition">New Arrivals</Link></li>
-              <li><Link to="/category/bulk-orders" className="hover:text-white transition">Bulk Orders</Link></li>
             </ul>
           </div>
 
           <div>
             <h4 className="font-display text-white text-sm font-semibold mb-4 tracking-wide">Categories</h4>
             <ul className="space-y-2.5 text-sm">
-              <li><Link to="/category/mens-jeans" className="hover:text-white transition">Men's Jeans</Link></li>
-              <li><Link to="/category/womens-jeans" className="hover:text-white transition">Women's Jeans</Link></li>
-              <li><Link to="/category/kids-jeans" className="hover:text-white transition">Kids Jeans</Link></li>
-              <li><Link to="/category/export-quality" className="hover:text-white transition">Export Quality</Link></li>
+              <li><Link to="/category/new-arrivals" className="hover:text-white transition">What's New</Link></li>
+              <li><Link to="/category/mens-jeans" className="hover:text-white transition">Men's</Link></li>
+              <li><Link to="/category/womens-jeans" className="hover:text-white transition">Women's</Link></li>
+              <li><Link to="/category/kids-jeans" className="hover:text-white transition">Kids</Link></li>
+              <li><Link to="/category/bulk-orders" className="hover:text-white transition">Bulk Orders</Link></li>
             </ul>
           </div>
 

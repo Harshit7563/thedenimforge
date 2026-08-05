@@ -252,8 +252,12 @@ export default function ProductPage() {
               </div>
               <p className="text-xs text-gray-500 mt-1">per piece · MOQ {product.moq} pcs{product.sku ? ` · SKU: ${product.sku}` : ''}</p>
               {product.stock !== undefined && (
-                <p className={`text-xs mt-1 font-medium ${product.stock > 100 ? 'text-green-600' : 'text-amber-600'}`}>
-                  {product.stock > 0 ? `${product.stock}+ pcs in stock` : 'Made to order'}
+                <p className={`text-xs mt-1 font-medium ${Number(product.stock) >= 99999 ? 'text-green-600' : product.stock > 100 ? 'text-green-600' : 'text-amber-600'}`}>
+                  {Number(product.stock) >= 99999
+                    ? 'Unlimited stock'
+                    : product.stock > 0
+                      ? `${product.stock}+ pcs in stock`
+                      : 'Made to order'}
                 </p>
               )}
               <div className="mt-3 pt-3 border-t border-[#e8e8e8] flex justify-between items-center">
@@ -355,17 +359,18 @@ export default function ProductPage() {
 
             {/* Tabs */}
             <div>
-              <div className="flex gap-1 overflow-x-auto scrollbar-hide border-b border-[#e8e8e8] mb-4">
+              <div className="flex gap-0.5 overflow-x-auto scrollbar-hide border-b border-[#e8e8e8] mb-4 -mx-1 px-1">
                 {tabs.map(({ id, label, icon: Icon }) => (
                   <button
                     key={id}
                     type="button"
                     onClick={() => setActiveTab(id)}
-                    className={`flex items-center gap-1.5 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition shrink-0 ${
+                    className={`flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm font-medium whitespace-nowrap border-b-2 transition shrink-0 touch-manipulation ${
                       activeTab === id ? 'border-[#1a1a1a] text-[#1a1a1a]' : 'border-transparent text-gray-500 hover:text-[#1a1a1a]'
                     }`}
                   >
-                    <Icon size={15} /> {label}
+                    <Icon size={14} />
+                    {label}
                   </button>
                 ))}
               </div>

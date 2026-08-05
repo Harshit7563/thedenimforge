@@ -4,26 +4,52 @@ const COMPANY = 'CODEQUIP WEBTECH PRIVATE LIMITED';
 const BRAND = 'The Denim Forge';
 const EMAIL = 'codequipwebtech@gmail.com';
 const PHONE = '8424939262';
-const ADDRESS = 'Shop No 22, Building Number 2, B Wing, Navkar Bahar, Ghanshyam Gupte Road, Vishnu Nagar, Dombivli West, Maharashtra 421202';
+const ADDRESS =
+  'Shop No 22, Building No 2, B Wing, Navkar Bahar, Ghanshyam Gupte Road, Vishnu Nagar, Dombivli West, Maharashtra — 421202';
 const WEBSITE = 'https://thedenimforge.com';
+const UPDATED = 'August 5, 2026';
 
 function PolicyLayout({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="max-w-3xl mx-auto px-4 py-8 sm:py-12">
       <nav className="text-xs text-gray-400 mb-6">
-        <Link to="/" className="hover:text-[#1a1a1a]">Home</Link>
+        <Link to="/" className="hover:text-[#1a1a1a]">
+          Home
+        </Link>
         <span className="mx-2">/</span>
         <span className="text-[#1a1a1a]">{title}</span>
       </nav>
       <h1 className="text-2xl sm:text-3xl font-bold text-[#1a1a1a] mb-2 tracking-tight">{title}</h1>
-      <p className="text-sm text-gray-500 mb-8">Last updated: June 22, 2026 · {WEBSITE}</p>
+      <p className="text-sm text-gray-500 mb-2">
+        Operated by <strong className="text-[#1a1a1a]">{COMPANY}</strong>
+      </p>
+      <p className="text-sm text-gray-500 mb-8">
+        Last updated: {UPDATED} · {WEBSITE}
+      </p>
       <div className="prose-policy text-sm text-gray-700 space-y-5 leading-relaxed">{children}</div>
-      <div className="mt-10 pt-6 border-t border-[#e8e8e8] text-sm text-gray-500">
-        <p className="font-semibold text-[#1a1a1a] mb-2">Contact Us</p>
+      <div className="mt-10 pt-6 border-t border-[#e8e8e8] text-sm text-gray-500 space-y-1">
+        <p className="font-semibold text-[#1a1a1a] mb-2">Registered Business & Contact</p>
         <p>{COMPANY}</p>
+        <p>Brand: {BRAND}</p>
         <p>{ADDRESS}</p>
-        <p>Email: <a href={`mailto:${EMAIL}`} className="text-[#1a1a1a] hover:underline">{EMAIL}</a></p>
-        <p>Phone: <a href={`tel:${PHONE}`} className="text-[#1a1a1a] hover:underline">{PHONE}</a></p>
+        <p>
+          Email:{' '}
+          <a href={`mailto:${EMAIL}`} className="text-[#1a1a1a] hover:underline">
+            {EMAIL}
+          </a>
+        </p>
+        <p>
+          Phone:{' '}
+          <a href={`tel:${PHONE}`} className="text-[#1a1a1a] hover:underline">
+            {PHONE}
+          </a>
+        </p>
+        <p>
+          Website:{' '}
+          <a href={WEBSITE} className="text-[#1a1a1a] hover:underline">
+            {WEBSITE}
+          </a>
+        </p>
       </div>
     </div>
   );
@@ -36,37 +62,103 @@ function H2({ children }: { children: React.ReactNode }) {
 export function TermsPage() {
   return (
     <PolicyLayout title="Terms & Conditions">
-      <p>Welcome to {BRAND} ({WEBSITE}), operated by {COMPANY} ("we", "us", "our"). By accessing or using our website, placing an order, or registering a wholesale account, you agree to be bound by these Terms & Conditions.</p>
+      <p>
+        These Terms & Conditions (“Terms”) govern your use of {WEBSITE} and all purchases made on{' '}
+        {BRAND}, a wholesale denim platform operated by {COMPANY} (“Company”, “we”, “us”, “our”). By
+        browsing the website, creating an account, submitting an inquiry, or placing an order, you
+        agree to these Terms.
+      </p>
 
-      <H2>1. About Us</H2>
-      <p>{BRAND} is a B2B wholesale denim platform supplying premium jeans to retailers, distributors, boutiques, and exporters across India. All transactions are governed by Indian law.</p>
+      <H2>1. Company identity</H2>
+      <p>
+        {COMPANY} owns and operates {BRAND}. Our registered place of business is at {ADDRESS}. For
+        support related to orders, accounts, or policies, contact {EMAIL} or {PHONE}.
+      </p>
 
-      <H2>2. Eligibility</H2>
-      <p>You must be 18 years or older and legally capable of entering into binding contracts. Wholesale accounts are intended for business buyers. We reserve the right to verify business credentials and reject registrations at our discretion.</p>
+      <H2>2. Nature of business</H2>
+      <p>
+        {BRAND} is a B2B wholesale platform for denim jeans and related apparel. We supply retailers,
+        distributors, boutiques, online sellers, and exporters across India. Listings, pricing, and
+        stock on the website are intended for business buyers.
+      </p>
 
-      <H2>3. Product Information</H2>
-      <p>We make every effort to display accurate product images, descriptions, fabric compositions, fits, and washes. However, actual products may vary slightly in shade, texture, or finish due to fabric batch variations, washing processes, and display settings. Product images on {WEBSITE} are for representation purposes.</p>
+      <H2>3. Eligibility & accounts</H2>
+      <ul className="list-disc pl-5 space-y-1">
+        <li>You must be 18 years or older and legally competent to contract under Indian law.</li>
+        <li>Wholesale registration may require business details (name, phone, company, GST if any).</li>
+        <li>You are responsible for keeping login credentials confidential.</li>
+        <li>We may refuse, suspend, or terminate accounts for misuse, fraud, or policy breach.</li>
+      </ul>
 
-      <H2>4. Pricing & MOQ</H2>
-      <p>All prices are listed in Indian Rupees (INR). Wholesale prices require minimum order quantities (MOQ) as specified per product. Prices are subject to change without prior notice. Confirmed orders will be honoured at the price agreed at the time of order confirmation.</p>
+      <H2>4. Products & representations</H2>
+      <p>
+        Product names, photos, fits, washes, fabrics, and sizes are described in good faith. Denim
+        is a natural-feel fabric; minor shade, texture, or wash variation between batches is normal
+        and not a defect. Images are representative. Always check the size chart on {WEBSITE} before
+        ordering.
+      </p>
 
-      <H2>5. Order Confirmation</H2>
-      <p>Placing an order on our website constitutes an offer to purchase. Orders are confirmed after we send written confirmation via email. Payment is Cash on Delivery (COD) — pay when the order arrives. We reserve the right to cancel orders due to stock unavailability, pricing errors, or incomplete verification.</p>
+      <H2>5. Pricing, MOQ & stock</H2>
+      <ul className="list-disc pl-5 space-y-1">
+        <li>All prices are in Indian Rupees (INR) and shown as wholesale rates unless stated otherwise.</li>
+        <li>Minimum order quantity (MOQ) starts from <strong>1 piece</strong> per style unless a product page states otherwise.</li>
+        <li>Prices may change without prior notice; confirmed orders are honoured at the checkout total shown when you placed the order.</li>
+        <li>We may cancel or partially fulfil orders if stock or logistics constraints arise, with notice to you.</li>
+      </ul>
 
-      <H2>6. Account Responsibility</H2>
-      <p>You are responsible for maintaining the confidentiality of your account credentials and for all activities under your account. Notify us immediately at {EMAIL} of any unauthorized use.</p>
+      <H2>6. Orders</H2>
+      <p>
+        Submitting an order is an offer to buy. An order is accepted when we confirm it (email/SMS
+        and/or status in your account). We may decline orders for incomplete address, verification
+        issues, pricing errors, or suspected fraud.
+      </p>
 
-      <H2>7. Intellectual Property</H2>
-      <p>All content on {WEBSITE} including logos, text, images, and design is the property of {COMPANY} and protected under applicable copyright and trademark laws. Unauthorized reproduction is prohibited.</p>
+      <H2>7. Payment</H2>
+      <p>
+        Currently, the only payment method on {WEBSITE} is <strong>Cash on Delivery (COD)</strong>.
+        You pay the delivery partner when the shipment is delivered. See our Fees & Payments Policy
+        for details.
+      </p>
 
-      <H2>8. Limitation of Liability</H2>
-      <p>{COMPANY} shall not be liable for indirect, incidental, or consequential damages arising from use of our website or products. Our maximum liability is limited to the value of the specific order in dispute.</p>
+      <H2>8. Shipping</H2>
+      <p>
+        Orders are shipped pan-India as per our Shipping & Delivery Policy. Standard shipping is
+        ₹199; orders of ₹25,000 and above qualify for free shipping within India (unless otherwise
+        stated at checkout).
+      </p>
 
-      <H2>9. Governing Law</H2>
-      <p>These terms are governed by the laws of India. Disputes shall be subject to the exclusive jurisdiction of courts in Thane, Maharashtra.</p>
+      <H2>9. Intellectual property</H2>
+      <p>
+        Logos, brand name “{BRAND}”, website design, text, and product photography on {WEBSITE} are
+        owned by {COMPANY} or used under licence. You may not copy, scrape, or commercially reuse
+        them without written permission.
+      </p>
 
-      <H2>10. Changes</H2>
-      <p>We may update these Terms at any time. Continued use of {WEBSITE} after changes constitutes acceptance of the revised terms.</p>
+      <H2>10. Acceptable use</H2>
+      <p>
+        You agree not to misuse the site (including hacking, scraping at scale, posting false
+        reviews, or using wholesale rates for deceptive consumer advertising). We may block access
+        for violations.
+      </p>
+
+      <H2>11. Limitation of liability</H2>
+      <p>
+        To the fullest extent permitted by law, {COMPANY} is not liable for indirect, incidental, or
+        consequential losses. Our aggregate liability for any claim related to an order is limited
+        to the amount paid (or payable) for that order.
+      </p>
+
+      <H2>12. Governing law & disputes</H2>
+      <p>
+        These Terms are governed by the laws of India. Courts at Thane, Maharashtra shall have
+        exclusive jurisdiction, subject to applicable consumer/business protections.
+      </p>
+
+      <H2>13. Changes</H2>
+      <p>
+        We may update these Terms from time to time. The “Last updated” date above will change.
+        Continued use of {WEBSITE} after updates means you accept the revised Terms.
+      </p>
     </PolicyLayout>
   );
 }
@@ -74,49 +166,105 @@ export function TermsPage() {
 export function PrivacyPage() {
   return (
     <PolicyLayout title="Privacy Policy">
-      <p>{COMPANY} ("we") operates {BRAND} at {WEBSITE}. This Privacy Policy explains how we collect, use, and protect your personal information in compliance with the Information Technology Act, 2000 and applicable data protection principles.</p>
+      <p>
+        This Privacy Policy explains how {COMPANY} (“we”), operating {BRAND} at {WEBSITE}, collects,
+        uses, stores, and protects personal information. We follow applicable Indian law, including
+        the Information Technology Act, 2000 and the Digital Personal Data Protection Act, 2023
+        (as applicable).
+      </p>
 
-      <H2>1. Information We Collect</H2>
+      <H2>1. Who we are</H2>
+      <p>
+        Data fiduciary / controller for this website: {COMPANY}, {ADDRESS}. Contact for privacy
+        requests: {EMAIL} / {PHONE}.
+      </p>
+
+      <H2>2. Information we collect</H2>
       <ul className="list-disc pl-5 space-y-1">
-        <li><strong>Account data:</strong> Name, email, phone, company name, GST number (if provided)</li>
-        <li><strong>Order data:</strong> Shipping address, billing details, order history, payment references</li>
-        <li><strong>Communication:</strong> Emails, wholesale inquiry forms, order notifications</li>
-        <li><strong>Technical data:</strong> IP address, browser type, device information, cookies</li>
-        <li><strong>Newsletter:</strong> Email address for marketing communications</li>
+        <li>
+          <strong>Account & profile:</strong> name, email, phone, company name, and optional
+          business identifiers (e.g. GSTIN if you provide it).
+        </li>
+        <li>
+          <strong>Orders & shipping:</strong> delivery address, pin code, order items, quantities,
+          sizes, and COD payment notes.
+        </li>
+        <li>
+          <strong>Communications:</strong> contact forms, wholesale inquiries, emails, and support
+          messages.
+        </li>
+        <li>
+          <strong>Technical data:</strong> IP address, browser/device type, approximate location,
+          cookies, and usage logs needed to run the site securely.
+        </li>
+        <li>
+          <strong>Marketing (optional):</strong> email if you subscribe to the newsletter.
+        </li>
       </ul>
 
-      <H2>2. How We Use Your Information</H2>
+      <H2>3. Why we use your data</H2>
       <ul className="list-disc pl-5 space-y-1">
-        <li>Process and fulfil wholesale orders</li>
-        <li>Manage your account and provide customer support</li>
-        <li>Send order updates, invoices, and shipping notifications</li>
-        <li>Improve our website and product offerings</li>
-        <li>Send promotional offers (with your consent; unsubscribe anytime)</li>
-        <li>Comply with legal obligations</li>
+        <li>Create and manage your wholesale account</li>
+        <li>Process, pack, ship, and track orders</li>
+        <li>Collect COD payments via logistics partners</li>
+        <li>Send order confirmations, dispatch updates, and support replies</li>
+        <li>Improve catalogue, pricing tools, and site performance</li>
+        <li>Send offers only where you have opted in (you may unsubscribe anytime)</li>
+        <li>Detect fraud and meet legal / tax / accounting duties</li>
       </ul>
 
-      <H2>3. Information Sharing</H2>
-      <p>We do not sell your personal data. We may share information with:</p>
+      <H2>4. Legal bases (summary)</H2>
+      <p>
+        We process data to perform a contract (orders/accounts), for legitimate business operations
+        (security, analytics), with consent where required (marketing), and to comply with law.
+      </p>
+
+      <H2>5. Sharing</H2>
+      <p>We do not sell personal data. We may share limited data with:</p>
       <ul className="list-disc pl-5 space-y-1">
-        <li>Courier and logistics partners for order delivery</li>
-        <li>Payment processors for transaction processing</li>
-        <li>Legal authorities when required by law</li>
+        <li>Courier / logistics partners for delivery and COD collection</li>
+        <li>Hosting, email, and IT service providers who process data on our instructions</li>
+        <li>Professional advisors (e.g. accountants) under confidentiality</li>
+        <li>Government or courts when legally required</li>
       </ul>
 
-      <H2>4. Data Security</H2>
-      <p>We implement reasonable security measures including encrypted connections (HTTPS), secure password storage, and access controls. However, no method of transmission over the internet is 100% secure.</p>
+      <H2>6. Security</H2>
+      <p>
+        We use HTTPS, access controls, and hashed passwords. No online system is perfectly secure;
+        please use a strong password and do not share OTPs or login links.
+      </p>
 
-      <H2>5. Data Retention</H2>
-      <p>We retain your data for as long as your account is active or as needed to fulfil orders and legal obligations. You may request deletion by emailing {EMAIL}.</p>
+      <H2>7. Retention</H2>
+      <p>
+        Account and order records are kept while your account is active and thereafter as needed
+        for tax, dispute, and legal retention periods. You may request deletion subject to those
+        obligations by emailing {EMAIL}.
+      </p>
 
-      <H2>6. Cookies</H2>
-      <p>We use cookies to maintain login sessions, remember preferences, and analyse site traffic. You can disable cookies in your browser settings, though some features may not function properly.</p>
+      <H2>8. Cookies</H2>
+      <p>
+        We use essential cookies for login/session and may use analytics cookies to understand
+        traffic. You can block non-essential cookies in your browser; some features may then not
+        work.
+      </p>
 
-      <H2>7. Your Rights</H2>
-      <p>You have the right to access, correct, or delete your personal data. Contact us at {EMAIL} to exercise these rights.</p>
+      <H2>9. Your rights</H2>
+      <p>
+        Subject to law, you may request access, correction, withdrawal of consent (for marketing),
+        or deletion of your personal data. Write to {EMAIL} with the subject “Privacy Request”.
+      </p>
 
-      <H2>8. Children's Privacy</H2>
-      <p>Our services are not directed at individuals under 18. We do not knowingly collect data from minors.</p>
+      <H2>10. Children</H2>
+      <p>
+        The website is for business users 18+. We do not knowingly collect data from children for
+        account registration.
+      </p>
+
+      <H2>11. Updates</H2>
+      <p>
+        We may update this Privacy Policy. Material changes will be reflected by updating the date
+        at the top of this page.
+      </p>
     </PolicyLayout>
   );
 }
@@ -124,31 +272,84 @@ export function PrivacyPage() {
 export function ShippingPage() {
   return (
     <PolicyLayout title="Shipping & Delivery Policy">
-      <H2>1. Delivery Coverage</H2>
-      <p>We deliver across India through trusted courier partners including DTDC, Delhivery, Blue Dart, and India Post. Export/international shipping is available on request — contact us at {EMAIL} or {PHONE}.</p>
+      <p>
+        This Shipping & Delivery Policy applies to orders placed on {BRAND} ({WEBSITE}) operated by{' '}
+        {COMPANY}.
+      </p>
 
-      <H2>2. Processing Time</H2>
+      <H2>1. Service area</H2>
+      <p>
+        We ship across India through reputed courier partners (for example Delhivery, DTDC, Blue
+        Dart, India Post, or equivalent). International / export shipments are arranged on request —
+        contact {EMAIL} or {PHONE}.
+      </p>
+
+      <H2>2. Shipping charges (India)</H2>
       <ul className="list-disc pl-5 space-y-1">
-        <li><strong>Standard orders (1–49 pcs):</strong> 3–5 business days after order confirmation</li>
-        <li><strong>Medium bulk (50–99 pcs):</strong> 5–7 business days</li>
-        <li><strong>Large bulk (100+ pcs):</strong> 7–10 business days</li>
-        <li><strong>Custom/manufacturing orders:</strong> 15–21 business days (timeline shared at confirmation)</li>
+        <li>
+          <strong>Flat shipping:</strong> ₹199 per order
+        </li>
+        <li>
+          <strong>Free shipping:</strong> on orders of <strong>₹25,000 and above</strong> (product
+          subtotal before COD handling, unless checkout shows otherwise)
+        </li>
+        <li>Remote or special-handling pin codes may require extra time or charges — we will inform you if applicable</li>
       </ul>
 
-      <H2>3. Shipping Charges</H2>
-      <p>Shipping charges are calculated based on order weight, volume, and delivery pin code. Free shipping is available on orders above ₹25,000 within India. Exact shipping cost is communicated before order confirmation.</p>
+      <H2>3. Processing & dispatch timelines</H2>
+      <ul className="list-disc pl-5 space-y-1">
+        <li>
+          <strong>Standard orders:</strong> typically packed and handed to courier within 3–5
+          business days after confirmation
+        </li>
+        <li>
+          <strong>Larger wholesale lots (50+ pcs):</strong> usually 5–10 business days
+        </li>
+        <li>
+          <strong>Very large / made-to-order lots:</strong> timeline confirmed in writing before
+          production
+        </li>
+      </ul>
+      <p>Business days exclude Sundays and public holidays at origin (Dombivli / Mumbai region).</p>
 
-      <H2>4. Order Tracking</H2>
-      <p>Once dispatched, you will receive a tracking number via email. You can also track orders from your account on {WEBSITE} under "Track Order".</p>
+      <H2>4. Transit time</H2>
+      <p>
+        After dispatch, metro and major cities often receive parcels in 2–5 business days; other
+        locations may take 4–8 business days depending on the courier network. These are estimates,
+        not guarantees.
+      </p>
 
-      <H2>5. Delivery Attempts</H2>
-      <p>Courier partners typically make 2–3 delivery attempts. If delivery fails, the package may be returned to us and re-shipping charges will apply.</p>
+      <H2>5. Tracking</H2>
+      <p>
+        When your order ships, we share tracking details by email/SMS where available. You can also
+        use <Link to="/track-order" className="underline font-medium text-[#1a1a1a]">Track Order</Link>{' '}
+        on {WEBSITE} or check your account order history after login.
+      </p>
 
-      <H2>6. Inspection on Delivery</H2>
-      <p>Please inspect the package upon delivery. Report any visible damage or quantity discrepancy within 24 hours to {EMAIL} with photos of the package and products.</p>
+      <H2>6. Delivery attempts & failed delivery</H2>
+      <p>
+        Couriers usually attempt delivery 2–3 times. If the package is returned to us due to wrong
+        address, unreachable phone, or refusal (except our error), re-shipping charges may apply.
+      </p>
 
-      <H2>7. Address Accuracy</H2>
-      <p>You are responsible for providing accurate shipping details. {COMPANY} is not liable for delays or losses due to incorrect addresses provided by the buyer.</p>
+      <H2>7. Address accuracy</H2>
+      <p>
+        Provide a complete address with pin code and a reachable mobile number. {COMPANY} is not
+        responsible for delays or loss caused by incorrect buyer details.
+      </p>
+
+      <H2>8. Inspection on delivery</H2>
+      <p>
+        Please check outer packaging on delivery. For visible damage or shortage, note it with the
+        delivery person where possible and email {EMAIL} within <strong>24 hours</strong> with
+        photos, order number, and description.
+      </p>
+
+      <H2>9. COD deliveries</H2>
+      <p>
+        For Cash on Delivery orders, please keep the exact payable amount ready. The amount due is
+        the checkout total (products + shipping, if any).
+      </p>
     </PolicyLayout>
   );
 }
@@ -156,36 +357,69 @@ export function ShippingPage() {
 export function RefundPage() {
   return (
     <PolicyLayout title="Cancellation & Refund Policy">
-      <H2>1. Order Cancellation</H2>
+      <p>
+        This policy explains cancellations, returns, and refunds for orders on {BRAND}, operated by{' '}
+        {COMPANY}.
+      </p>
+
+      <H2>1. Cancellation by buyer</H2>
       <ul className="list-disc pl-5 space-y-1">
-        <li>Orders can be cancelled within 24 hours of placement, before production/packing begins</li>
-        <li>After 24 hours or once production starts, cancellation may incur up to 25% restocking fee</li>
-        <li>Custom/manufacturing orders cannot be cancelled once production has started</li>
-        <li>To cancel, email {EMAIL} or call {PHONE} with your order number</li>
+        <li>
+          You may request cancellation within <strong>24 hours</strong> of placing the order, if
+          packing / dispatch has not started.
+        </li>
+        <li>
+          After packing or dispatch begins, cancellation may not be possible, or a restocking fee of
+          up to 25% may apply for wholesale lots.
+        </li>
+        <li>Custom / made-to-order production cannot be cancelled once cutting or stitching has started.</li>
+        <li>
+          Email {EMAIL} or call {PHONE} with your order number to request cancellation.
+        </li>
       </ul>
 
-      <H2>2. Refund Eligibility</H2>
-      <p>Refunds are issued in the following cases:</p>
+      <H2>2. Cancellation by us</H2>
+      <p>
+        We may cancel an order for stock issues, address problems, suspected fraud, or pricing
+        errors. If any advance was collected (rare on COD), it will be refunded as per Section 5.
+      </p>
+
+      <H2>3. When refunds / replacements apply</H2>
       <ul className="list-disc pl-5 space-y-1">
-        <li>Defective or damaged products (with photo evidence within 7 days of delivery)</li>
-        <li>Wrong items shipped (report within 48 hours)</li>
-        <li>Significant variation from agreed specifications</li>
-        <li>Order cancelled by us due to stock unavailability</li>
+        <li>Manufacturing defect or damaged product (photo evidence within 7 days of delivery)</li>
+        <li>Wrong style / size shipped versus your confirmed order (report within 48 hours)</li>
+        <li>Missing pieces versus packing list (report within 48 hours)</li>
+        <li>Order cancelled by us before delivery</li>
       </ul>
 
-      <H2>3. Non-Refundable Cases</H2>
+      <H2>4. Not eligible</H2>
       <ul className="list-disc pl-5 space-y-1">
-        <li>Minor shade or wash variations within industry tolerance</li>
-        <li>Change of mind after order confirmation</li>
-        <li>Products damaged due to improper storage by buyer</li>
-        <li>Shipping charges (unless return is due to our error)</li>
+        <li>Minor shade / wash / stretch variation within normal denim tolerance</li>
+        <li>Change of mind, wrong size ordered by buyer, or “didn’t like the fit”</li>
+        <li>Damage after delivery due to improper storage, washing, or alteration</li>
+        <li>Products returned without tags / in unsaleable condition (unless we caused the issue)</li>
       </ul>
 
-      <H2>4. Refund Process</H2>
-      <p>Approved refunds are processed within 7–10 business days to the original payment method. Bank transfer refunds may take an additional 3–5 business days.</p>
+      <H2>5. Refund process (COD context)</H2>
+      <p>
+        Most {BRAND} orders are COD, so no online payment is collected at checkout. If a refund is
+        due (for example after a paid re-ship or approved claim), we will arrange bank transfer /
+        UPI after you share account details. Approved refunds are typically initiated within{' '}
+        <strong>7–10 business days</strong>; banks may take additional time to credit.
+      </p>
 
-      <H2>5. Returns</H2>
-      <p>Return shipping for defective items is borne by {COMPANY}. For other approved returns, the buyer bears return shipping costs. Products must be returned in original condition with tags.</p>
+      <H2>6. Returns</H2>
+      <p>
+        For approved defective / wrong-item returns, return shipping is borne by {COMPANY}. We will
+        share the return address and instructions. For other approved returns, return shipping is
+        usually borne by the buyer unless we agree otherwise in writing.
+      </p>
+
+      <H2>7. How to raise a claim</H2>
+      <p>
+        Email {EMAIL} with: order number, issue description, clear photos/videos, and your
+        preferred resolution (replacement / refund / store credit). Incomplete claims may be delayed.
+      </p>
     </PolicyLayout>
   );
 }
@@ -193,26 +427,61 @@ export function RefundPage() {
 export function PaymentPage() {
   return (
     <PolicyLayout title="Fees & Payments Policy">
-      <H2>1. Accepted Payment Method</H2>
+      <p>
+        This Fees & Payments Policy applies to purchases on {BRAND} ({WEBSITE}), operated by{' '}
+        {COMPANY}.
+      </p>
+
+      <H2>1. Accepted payment method</H2>
+      <p>
+        At present, <strong>Cash on Delivery (COD)</strong> is the only payment method available on
+        the website. Online prepaid gateways (UPI / cards / net banking) are not enabled for
+        checkout.
+      </p>
+
+      <H2>2. How COD works</H2>
       <ul className="list-disc pl-5 space-y-1">
-        <li><strong>Cash on Delivery (COD)</strong> — currently the only payment method on {WEBSITE}</li>
+        <li>Add products to cart, checkout, and place the order — payment method is COD by default.</li>
+        <li>You receive order confirmation by email / account status.</li>
+        <li>Pay the delivery executive the order total when the parcel is delivered.</li>
+        <li>Please keep exact cash ready for the amount shown at checkout.</li>
       </ul>
 
-      <H2>2. How COD Works</H2>
+      <H2>3. What you pay</H2>
       <ul className="list-disc pl-5 space-y-1">
-        <li>Place your order online — COD is selected automatically</li>
-        <li>Pay cash to the delivery partner when your order arrives</li>
-        <li>Order confirmation is sent by email / SMS after placement</li>
+        <li>Wholesale product subtotal (as listed)</li>
+        <li>
+          Shipping: <strong>₹199</strong>, or <strong>FREE</strong> if order subtotal is ₹25,000 or
+          more
+        </li>
+        <li>Any taxes shown on the invoice / packing documents</li>
       </ul>
 
-      <H2>3. GST</H2>
-      <p>All prices are exclusive of GST unless stated otherwise. GST at applicable rates will be added to invoices. GSTIN can be provided for input tax credit.</p>
+      <H2>4. GST & invoices</H2>
+      <p>
+        Prices on the website are typically shown as wholesale rates. Applicable GST (if any) will
+        be charged as per Indian tax law and reflected on tax invoices. Share your GSTIN at
+        checkout/notes or by email if you need it on the invoice for ITC.
+      </p>
 
-      <H2>4. Pricing Errors</H2>
-      <p>In case of pricing errors on {WEBSITE}, we reserve the right to cancel the order. We will notify you before processing any change.</p>
+      <H2>5. Pricing errors</H2>
+      <p>
+        If a product or shipping charge is listed incorrectly due to a technical error, we may
+        cancel or adjust the order after notifying you. You may choose to proceed at the corrected
+        price or cancel without charge.
+      </p>
 
-      <H2>5. Support</H2>
-      <p>For payment or order queries, contact {EMAIL} or {PHONE}. Official communication is only from these channels.</p>
+      <H2>6. Failed / refused COD</H2>
+      <p>
+        Repeated COD refusals without valid reason may lead to account review, prepaid-only
+        requests for future orders, or suspension.
+      </p>
+
+      <H2>7. Support</H2>
+      <p>
+        For billing or COD disputes, contact {EMAIL} or {PHONE} with your order number. Official
+        communication is only from {COMPANY} channels listed on {WEBSITE}.
+      </p>
     </PolicyLayout>
   );
 }
@@ -220,35 +489,90 @@ export function PaymentPage() {
 export function WholesalePolicyPage() {
   return (
     <PolicyLayout title="Wholesale Terms & Conditions">
-      <H2>1. Wholesale Program</H2>
-      <p>The {BRAND} Wholesale Program ("Forge Red") provides registered business buyers access to factory-direct denim pricing. Registration is free and subject to verification.</p>
+      <p>
+        These Wholesale Terms apply to business buyers using {BRAND}’s wholesale programme on{' '}
+        {WEBSITE}, operated by {COMPANY}. They apply together with our general Terms & Conditions,
+        Shipping, Payments, and Refund policies.
+      </p>
 
-      <H2>2. Eligibility</H2>
-      <p>Open to registered businesses including retail stores, boutiques, online sellers, distributors, and exporters. Valid business proof (GST, shop license, or company registration) may be required.</p>
+      <H2>1. Programme overview</H2>
+      <p>
+        {BRAND} offers factory-oriented wholesale denim pricing for retailers, distributors,
+        boutiques, online sellers, and exporters. Registration on the website creates a buyer
+        account for browsing, ordering, and tracking.
+      </p>
 
-      <H2>3. Minimum Order Quantity</H2>
+      <H2>2. Eligibility & verification</H2>
       <ul className="list-disc pl-5 space-y-1">
-        <li>Standard MOQ: from 1 piece per style</li>
-        <li>Export quality: flexible MOQ per style</li>
-        <li>Bulk mixed packs: volume discounts available</li>
+        <li>Intended for genuine business buyers (not casual one-off consumer retail misuse).</li>
+        <li>
+          We may ask for GST certificate, shop licence, company incorporation, or other proof before
+          large consignments.
+        </li>
+        <li>{COMPANY} may approve, reject, or limit accounts at its discretion.</li>
       </ul>
 
-      <H2>4. Pricing Tiers</H2>
+      <H2>3. Minimum order quantity (MOQ)</H2>
       <ul className="list-disc pl-5 space-y-1">
-        <li>1–49 pcs: Factory wholesale price</li>
-        <li>50–99 pcs: Additional 5% discount</li>
-        <li>100–499 pcs: Additional 10% discount</li>
-        <li>500+ pcs: Custom pricing — contact sales team</li>
+        <li>
+          Standard MOQ: <strong>1 piece per style</strong> (unless a product page states a higher MOQ)
+        </li>
+        <li>Mixed styles in one order are allowed</li>
+        <li>Bulk / export programmes may use separate written MOQs agreed by email</li>
       </ul>
 
-      <H2>5. Samples</H2>
-      <p>Free samples available on orders of 100+ pieces. Sample charges apply for smaller quantities and are adjustable against the first bulk order.</p>
+      <H2>4. Pricing</H2>
+      <ul className="list-disc pl-5 space-y-1">
+        <li>Website wholesale prices are the default rate for registered buyers.</li>
+        <li>
+          Volume discounts for larger lots (for example 50+, 100+, 500+ pieces) may be offered on
+          inquiry — final rates are confirmed in writing before dispatch.
+        </li>
+        <li>Wholesale rates are confidential business pricing; do not publish them as MRP lists.</li>
+      </ul>
 
-      <H2>6. Exclusivity</H2>
-      <p>Wholesale pricing is confidential. Buyers must not share wholesale rates publicly or with competitors. Violation may result in account termination.</p>
+      <H2>5. Categories & catalogue</H2>
+      <p>
+        Products are assigned to Men’s, Women’s, or Kids categories. “What’s New” and “Bulk Orders”
+        on the storefront showcase available catalogue styles for discovery; order fulfilment follows
+        the product’s actual category, size, and stock rules.
+      </p>
 
-      <H2>7. Account Termination</H2>
-      <p>We may suspend or terminate wholesale accounts for payment defaults, policy violations, or fraudulent activity without prior notice.</p>
+      <H2>6. Samples</H2>
+      <p>
+        Sample pairs may be arranged for serious wholesale buyers. Sample charges (if any) and
+        adjustment against a follow-up bulk order will be confirmed before dispatch.
+      </p>
+
+      <H2>7. Payment & credit</H2>
+      <p>
+        Website checkout is COD only. Any credit period, advance, or bank transfer arrangement for
+        large buyers must be agreed separately in writing with {COMPANY}.
+      </p>
+
+      <H2>8. Quality & claims</H2>
+      <p>
+        Wholesale buyers should inspect goods promptly on receipt. Claims follow our Cancellation &
+        Refund Policy. Industry-standard denim shade variation is not a quality failure.
+      </p>
+
+      <H2>9. Exclusivity & brand use</H2>
+      <p>
+        Unless we grant written territory exclusivity, purchasing wholesale does not create exclusive
+        distribution rights. You may not use {BRAND} / {COMPANY} trademarks in a way that suggests
+        partnership or ownership without permission.
+      </p>
+
+      <H2>10. Account suspension</H2>
+      <p>
+        We may suspend wholesale access for non-payment / COD abuse, policy breaches, sharing of
+        confidential rates in bad faith, or fraudulent conduct.
+      </p>
+
+      <H2>11. Contact for wholesale</H2>
+      <p>
+        Wholesale desk: {EMAIL} · {PHONE} · {ADDRESS}
+      </p>
     </PolicyLayout>
   );
 }

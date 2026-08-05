@@ -84,11 +84,6 @@ sudo nginx -t && sudo systemctl reload nginx
 
 Features: Dashboard, Products CRUD, Orders management, Wholesale inquiries.
 
-## Demo Account
-
-- **Email:** demo@denimforge.com
-- **Password:** demo1234
-
 ## Policy Pages
 
 - `/terms` — Terms & Conditions

@@ -1,11 +1,11 @@
-import { useEffect, useState, type FormEvent, type ChangeEvent, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type FormEvent, type ChangeEvent, type ReactNode } from 'react';
 import { adminApi } from '../lib/adminApi';
 import { api, type Category } from '../lib/api';
-import { Trash2, Plus, X, Upload, Pencil } from 'lucide-react';
+import { ADMIN_PRODUCT_CATEGORY_SLUGS, UNLIMITED_STOCK } from '../lib/categories';
+import { Trash2, Plus, X, Upload, Pencil, Star } from 'lucide-react';
 
 const MENS_SIZES = ['28', '30', '32', '34', '36', '38', '40', '42'];
 const KIDS_SIZES = ['4', '6', '8', '10', '12', '14'];
-const SIZE_OPTIONS = [...MENS_SIZES, ...KIDS_SIZES];
 const FIT_OPTIONS = ['Slim', 'Regular', 'Straight', 'Bootcut', 'Tapered', 'Skinny', 'Relaxed', 'Wide Leg', 'Mom Fit', 'Boyfriend', 'Cargo'];
 const WASH_OPTIONS = ['Dark Indigo', 'Mid Blue', 'Light Wash', 'Black', 'Grey', 'Vintage', 'Raw', 'Stone Wash', 'Acid Wash', 'Faded Blue', 'Charcoal', 'Olive'];
 const MAX_PHOTOS = 4;
@@ -31,8 +31,12 @@ const emptyForm = {
   is_bestseller: false,
 };
 
-function defaultSizeStock(): SizeStock {
-  return Object.fromEntries(MENS_SIZES.map((s) => [s, '100']));
+function unlimitedStockFor(sizes: string[]): SizeStock {
+  return Object.fromEntries(sizes.map((s) => [s, String(UNLIMITED_STOCK)]));
+}
+
+function sizesForCategorySlug(slug?: string) {
+  return slug === 'kids-jeans' ? KIDS_SIZES : MENS_SIZES;
 }
 
 export default function AdminProducts() {
@@ -43,16 +47,20 @@ export default function AdminProducts() {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
-  const [sizeStock, setSizeStock] = useState<SizeStock>(defaultSizeStock);
-  const [customSize, setCustomSize] = useState('');
+  const [sizeStock, setSizeStock] = useState<SizeStock>(unlimitedStockFor(MENS_SIZES));
   const [photoSlots, setPhotoSlots] = useState<PhotoSlot[]>(Array(MAX_PHOTOS).fill(null));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [okMsg, setOkMsg] = useState('');
 
   const filledPhotos = photoSlots.filter(Boolean).length;
-  const enabledSizes = Object.keys(sizeStock).filter((s) => Number(sizeStock[s]) >= 0 && sizeStock[s] !== '');
-  const totalPieces = enabledSizes.reduce((sum, s) => sum + (Number(sizeStock[s]) || 0), 0);
+  const enabledSizes = Object.keys(sizeStock);
+  const productCategories = useMemo(
+    () => categories.filter((c) => (ADMIN_PRODUCT_CATEGORY_SLUGS as readonly string[]).includes(c.slug)),
+    [categories]
+  );
+
+  const selectedCategory = productCategories.find((c) => String(c.id) === form.category_id);
 
   const inputClass = 'w-full h-11 border border-[#e8e8e8] rounded-lg px-3 text-sm focus:outline-none focus:border-[#1a1a1a] bg-white';
 
@@ -81,7 +89,15 @@ export default function AdminProducts() {
   };
 
   useEffect(() => {
-    api.getCategories().then(setCategories).catch(() => {});
+    api
+      .getCategories({ for: 'admin' })
+      .then((cats) => {
+        const only = cats.filter((c) =>
+          ['mens-jeans', 'womens-jeans', 'kids-jeans'].includes(c.slug)
+        );
+        setCategories(only);
+      })
+      .catch(() => {});
     load();
   }, []);
 
@@ -89,11 +105,15 @@ export default function AdminProducts() {
     load(filterCategory);
   }, [filterCategory]);
 
+  const applyCategorySizes = (categoryId: string) => {
+    const cat = productCategories.find((c) => String(c.id) === categoryId);
+    setSizeStock(unlimitedStockFor(sizesForCategorySlug(cat?.slug)));
+  };
+
   const openAdd = () => {
     setEditingId(null);
     setForm(emptyForm);
-    setSizeStock(defaultSizeStock());
-    setCustomSize('');
+    setSizeStock(unlimitedStockFor(MENS_SIZES));
     resetPhotos();
     setError('');
     setOkMsg('');
@@ -101,24 +121,18 @@ export default function AdminProducts() {
   };
 
   const openEdit = (p: ProductRow) => {
-    const sizes = Array.isArray(p.sizes) ? (p.sizes as string[]) : MENS_SIZES;
-    let stockMap: SizeStock = {};
-    const raw = p.size_stock;
-    if (raw && typeof raw === 'object' && !Array.isArray(raw) && Object.keys(raw as object).length) {
-      stockMap = Object.fromEntries(
-        Object.entries(raw as Record<string, number | string>).map(([k, v]) => [k, String(v)])
-      );
-    } else {
-      const per = Math.max(1, Math.floor(Number(p.stock || 0) / Math.max(sizes.length, 1)));
-      stockMap = Object.fromEntries(sizes.map((s) => [s, String(per)]));
-    }
+    const catId = String(p.category_id || '');
+    const cat = productCategories.find((c) => String(c.id) === catId);
+    const sizes = Array.isArray(p.sizes) && (p.sizes as string[]).length
+      ? (p.sizes as string[])
+      : sizesForCategorySlug(cat?.slug);
 
     setEditingId(p.id as string);
     setForm({
       name: String(p.name || ''),
       short_description: String(p.short_description || ''),
       description: String(p.description || ''),
-      category_id: String(p.category_id || ''),
+      category_id: catId,
       retail_price: String(p.retail_price || ''),
       wholesale_price: String(p.wholesale_price || ''),
       moq: String(p.moq ?? 1),
@@ -130,36 +144,12 @@ export default function AdminProducts() {
       is_new: Boolean(p.is_new),
       is_bestseller: Boolean(p.is_bestseller),
     });
-    setSizeStock(stockMap);
-    setCustomSize('');
+    setSizeStock(unlimitedStockFor(sizes));
     const images = Array.isArray(p.images) ? (p.images as string[]) : [];
     resetPhotos(images);
     setError('');
     setOkMsg('');
     setShowForm(true);
-  };
-
-  const toggleSize = (size: string) => {
-    setSizeStock((prev) => {
-      if (size in prev) {
-        const next = { ...prev };
-        delete next[size];
-        return next;
-      }
-      return { ...prev, [size]: '100' };
-    });
-  };
-
-  const setPieces = (size: string, value: string) => {
-    const clean = value.replace(/[^\d]/g, '');
-    setSizeStock((prev) => ({ ...prev, [size]: clean }));
-  };
-
-  const addCustomSize = () => {
-    const s = customSize.trim();
-    if (!s) return;
-    setSizeStock((prev) => ({ ...prev, [s]: prev[s] || '50' }));
-    setCustomSize('');
   };
 
   const onPickSlot = (slotIndex: number, e: ChangeEvent<HTMLInputElement>) => {
@@ -198,6 +188,17 @@ export default function AdminProducts() {
     });
   };
 
+  const makeMainPhoto = (slotIndex: number) => {
+    if (slotIndex === 0) return;
+    setPhotoSlots((prev) => {
+      const next = [...prev];
+      const [picked] = next.splice(slotIndex, 1);
+      next.unshift(picked);
+      while (next.length < MAX_PHOTOS) next.push(null);
+      return next.slice(0, MAX_PHOTOS);
+    });
+  };
+
   const remove = async (id: string) => {
     if (!confirm('Delete this product?')) return;
     await adminApi.deleteProduct(id);
@@ -209,18 +210,18 @@ export default function AdminProducts() {
     setError('');
     setOkMsg('');
     if (!form.name.trim()) return setError('Product name required');
-    if (!form.category_id) return setError('Category select karo');
+    if (!form.category_id) return setError('Category select karo (Men / Women / Kids)');
     if (!form.wholesale_price) return setError('Wholesale price required');
-    if (!enabledSizes.length) return setError('Kam se kam 1 size select karo aur pieces bhara');
+    if (!enabledSizes.length) return setError('Sizes missing');
     if (filledPhotos < MAX_PHOTOS) {
       return setError(`4 photos upload karo (${filledPhotos}/4)`);
     }
 
     const size_stock: Record<string, number> = {};
     for (const s of enabledSizes) {
-      size_stock[s] = Number(sizeStock[s]) || 0;
+      size_stock[s] = UNLIMITED_STOCK;
     }
-    const stock = Object.values(size_stock).reduce((a, b) => a + b, 0);
+    const stock = UNLIMITED_STOCK * enabledSizes.length;
 
     setSaving(true);
     try {
@@ -257,7 +258,7 @@ export default function AdminProducts() {
         size_stock,
         sizes: enabledSizes,
         colors: [form.wash],
-        sku: form.sku.trim() || undefined,
+        sku: editingId ? (form.sku.trim() || undefined) : undefined, // new: server auto DF-xxxxxx
         fabric: form.fabric,
         fit: form.fit,
         wash: form.wash,
@@ -283,14 +284,14 @@ export default function AdminProducts() {
     }
   };
 
-  const allSizeChoices = Array.from(new Set([...SIZE_OPTIONS, ...Object.keys(sizeStock)]));
-
   return (
     <div>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold">Products</h1>
-          <p className="text-sm text-gray-500 mt-0.5">{products.length} products · size + pieces manage karo</p>
+          <p className="text-sm text-gray-500 mt-0.5">
+            {products.length} products · category: Men / Women / Kids only
+          </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <select
@@ -299,7 +300,7 @@ export default function AdminProducts() {
             className={`${inputClass} sm:w-52`}
           >
             <option value="">All Categories</option>
-            {categories.map((c) => (
+            {productCategories.map((c) => (
               <option key={c.id} value={c.id}>{c.name}</option>
             ))}
           </select>
@@ -326,7 +327,7 @@ export default function AdminProducts() {
               <tr>
                 <th className="text-left p-3 font-semibold">Product</th>
                 <th className="text-left p-3 font-semibold">Category</th>
-                <th className="text-left p-3 font-semibold">Sizes / Pieces</th>
+                <th className="text-left p-3 font-semibold">Sizes</th>
                 <th className="text-left p-3 font-semibold">Wholesale</th>
                 <th className="text-left p-3 font-semibold">MOQ</th>
                 <th className="text-left p-3 font-semibold">Stock</th>
@@ -337,34 +338,38 @@ export default function AdminProducts() {
               {products.map((p) => {
                 const imgs = Array.isArray(p.images) ? (p.images as string[]) : [];
                 const sizes = Array.isArray(p.sizes) ? (p.sizes as string[]) : [];
-                const ss = (p.size_stock && typeof p.size_stock === 'object' && !Array.isArray(p.size_stock))
-                  ? (p.size_stock as Record<string, number>)
-                  : null;
+                const stockNum = Number(p.stock || 0);
+                const unlimited = stockNum >= UNLIMITED_STOCK;
                 return (
                   <tr key={p.id as string} className="border-t border-[#f0f0f0]">
                     <td className="p-3">
                       <div className="flex items-center gap-3">
-                        <img
-                          src={imgs[0] || '/images/products/jeans-mens-blue-1.jpg'}
-                          alt=""
-                          className="w-12 h-14 object-cover rounded-md bg-gray-100"
-                        />
+                        <div className="relative">
+                          <img
+                            src={imgs[0] || '/images/products/jeans-mens-blue-1.jpg'}
+                            alt=""
+                            className="w-12 h-14 object-cover rounded-md bg-gray-100"
+                          />
+                          {imgs[0] && (
+                            <span className="absolute -top-1 -left-1 bg-[#c41e3a] text-white text-[8px] font-bold px-1 rounded">
+                              MAIN
+                            </span>
+                          )}
+                        </div>
                         <div>
                           <p className="font-medium">{p.name as string}</p>
                           <p className="text-xs text-gray-400">{p.sku as string}</p>
+                          <p className="text-[10px] text-gray-400 mt-0.5">{imgs.length}/4 photos</p>
                         </div>
                       </div>
                     </td>
                     <td className="p-3 text-gray-600">{(p.category_name as string) || '—'}</td>
                     <td className="p-3 text-xs text-gray-600 max-w-[200px]">
-                      {ss
-                        ? Object.entries(ss).slice(0, 6).map(([s, n]) => `${s}:${n}`).join(' · ')
-                        : sizes.join(', ')}
-                      {ss && Object.keys(ss).length > 6 ? '…' : ''}
+                      {sizes.join(', ') || '—'}
                     </td>
                     <td className="p-3">₹{p.wholesale_price as string}</td>
                     <td className="p-3">{p.moq as number}</td>
-                    <td className="p-3 font-medium">{p.stock as number}</td>
+                    <td className="p-3 font-medium text-green-700">{unlimited ? 'Unlimited' : stockNum}</td>
                     <td className="p-3">
                       <div className="flex items-center gap-2 justify-end">
                         <button type="button" onClick={() => openEdit(p)} className="text-gray-500 hover:text-[#1a1a1a] p-1" title="Edit">
@@ -406,19 +411,26 @@ export default function AdminProducts() {
               <section className="space-y-4">
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400">Basic info</h3>
                 {field(
-                  'Category *',
+                  'Category * (Men / Women / Kids only)',
                   <select
                     required
                     value={form.category_id}
-                    onChange={(e) => setForm({ ...form, category_id: e.target.value })}
+                    onChange={(e) => {
+                      const id = e.target.value;
+                      setForm({ ...form, category_id: id });
+                      applyCategorySizes(id);
+                    }}
                     className={inputClass}
                   >
                     <option value="">Select category</option>
-                    {categories.map((c) => (
+                    {productCategories.map((c) => (
                       <option key={c.id} value={c.id}>{c.name}</option>
                     ))}
                   </select>
                 )}
+                <p className="text-xs text-[#5c6775] -mt-2">
+                  What&apos;s New aur Bulk Orders me ye product automatic dikhega — alag category select nahi karni.
+                </p>
                 {field(
                   'Product Name *',
                   <input
@@ -450,7 +462,7 @@ export default function AdminProducts() {
 
               <section className="space-y-4">
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400">Pricing & MOQ</h3>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                   {field(
                     'Wholesale ₹ *',
                     <input
@@ -482,16 +494,8 @@ export default function AdminProducts() {
                       className={inputClass}
                     />
                   )}
-                  {field(
-                    'SKU',
-                    <input
-                      value={form.sku}
-                      onChange={(e) => setForm({ ...form, sku: e.target.value })}
-                      className={inputClass}
-                      placeholder="Auto if empty"
-                    />
-                  )}
                 </div>
+                <p className="text-xs text-gray-400">SKU automatic generate hoga (jaise DF-482913).</p>
               </section>
 
               <section className="space-y-4">
@@ -521,75 +525,26 @@ export default function AdminProducts() {
               </section>
 
               <section className="space-y-3">
-                <div className="flex items-end justify-between gap-3">
-                  <div>
-                    <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400">Size & pieces *</h3>
-                    <p className="text-xs text-gray-400 mt-1">Size select karo, har size ke pieces (stock) bhara</p>
-                  </div>
-                  <p className="text-sm font-semibold text-[#1a1a1a] shrink-0">
-                    Total: {totalPieces} pcs
+                <div>
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400">Size & pieces</h3>
+                  <p className="text-xs text-green-700 mt-1 font-medium">
+                    Automatic · all sizes unlimited (no pieces fill karna)
+                    {selectedCategory ? ` · ${selectedCategory.name}` : ''}
                   </p>
                 </div>
-
-                <div className="border border-[#e8e8e8] rounded-xl overflow-hidden">
-                  <div className="grid grid-cols-[1fr_120px_40px] gap-2 bg-[#faf9f7] px-3 py-2 text-xs font-semibold text-gray-500">
-                    <span>Size</span>
-                    <span>Pieces</span>
-                    <span></span>
-                  </div>
-                  {allSizeChoices.map((s) => {
-                    const on = s in sizeStock;
-                    return (
-                      <div
-                        key={s}
-                        className={`grid grid-cols-[1fr_120px_40px] gap-2 items-center px-3 py-2 border-t border-[#f0f0f0] ${on ? 'bg-white' : 'bg-gray-50/50'}`}
-                      >
-                        <label className="flex items-center gap-2 text-sm font-medium cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={on}
-                            onChange={() => toggleSize(s)}
-                            className="accent-[#1a1a1a]"
-                          />
-                          Size {s}
-                        </label>
-                        <input
-                          type="number"
-                          min="0"
-                          disabled={!on}
-                          value={on ? sizeStock[s] : ''}
-                          onChange={(e) => setPieces(s, e.target.value)}
-                          placeholder="0"
-                          className="h-9 border border-[#e8e8e8] rounded-lg px-2 text-sm disabled:bg-gray-100 disabled:text-gray-400"
-                        />
-                        <button
-                          type="button"
-                          disabled={!on}
-                          onClick={() => toggleSize(s)}
-                          className="text-gray-400 hover:text-red-500 disabled:opacity-30"
-                          title="Remove"
-                        >
-                          <X size={16} />
-                        </button>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                <div className="flex gap-2">
-                  <input
-                    value={customSize}
-                    onChange={(e) => setCustomSize(e.target.value)}
-                    placeholder="Custom size e.g. 44"
-                    className={`${inputClass} flex-1`}
-                  />
-                  <button
-                    type="button"
-                    onClick={addCustomSize}
-                    className="h-11 px-4 border border-[#e8e8e8] rounded-lg text-sm font-medium hover:border-[#1a1a1a]"
-                  >
-                    Add size
-                  </button>
+                <div className="flex flex-wrap gap-2 p-3 rounded-xl border border-green-200 bg-green-50/50">
+                  {enabledSizes.map((s) => (
+                    <span
+                      key={s}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-green-200 rounded-full text-sm font-medium"
+                    >
+                      Size {s}
+                      <span className="text-[10px] uppercase tracking-wide text-green-700 font-bold">Unlimited</span>
+                    </span>
+                  ))}
+                  {!enabledSizes.length && (
+                    <span className="text-xs text-gray-500">Category select karo — sizes auto set ho jayenge</span>
+                  )}
                 </div>
               </section>
 
@@ -597,32 +552,71 @@ export default function AdminProducts() {
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">
                   Photos * ({filledPhotos}/{MAX_PHOTOS})
                 </h3>
-                <p className="text-xs text-gray-400 mb-3">Exactly 4 product photos</p>
+                <p className="text-xs text-gray-500 mb-3">
+                  Exactly 4 photos. <strong>Photo 1 = Main pic</strong> (product card & listing pe yahi dikhegi).
+                  Baaki gallery me.
+                </p>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   {photoSlots.map((slot, i) => {
                     const src = slot?.kind === 'existing' ? slot.url : slot?.kind === 'new' ? slot.preview : null;
+                    const fileName = slot?.kind === 'new' ? slot.file.name : null;
+                    const isMain = i === 0 && Boolean(src);
                     return (
-                      <div key={i} className="relative aspect-[3/4] rounded-xl border-2 border-dashed border-[#e8e8e8] overflow-hidden bg-[#fafafa]">
+                      <div
+                        key={i}
+                        className={`relative aspect-[3/4] rounded-xl border-2 overflow-hidden bg-[#fafafa] ${
+                          isMain ? 'border-[#c41e3a]' : 'border-dashed border-[#e8e8e8]'
+                        }`}
+                      >
                         {src ? (
                           <>
-                            <img src={src} alt="" className="absolute inset-0 w-full h-full object-cover" />
-                            <button
-                              type="button"
-                              onClick={() => clearSlot(i)}
-                              className="absolute top-1.5 right-1.5 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm shadow"
-                            >
-                              ×
-                            </button>
-                            <span className="absolute bottom-1.5 left-1.5 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">{i + 1}</span>
-                            <label className="absolute inset-x-0 bottom-0 bg-black/50 text-white text-[10px] text-center py-1 cursor-pointer opacity-0 hover:opacity-100 transition">
-                              Change
+                            <img src={src} alt={fileName || `Photo ${i + 1}`} className="absolute inset-0 w-full h-full object-cover" />
+                            <div className="absolute inset-x-0 top-0 flex items-start justify-between p-1.5 gap-1">
+                              {isMain ? (
+                                <span className="inline-flex items-center gap-0.5 bg-[#c41e3a] text-white text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded">
+                                  <Star size={10} fill="currentColor" /> Main
+                                </span>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => makeMainPhoto(i)}
+                                  className="bg-black/70 text-white text-[9px] font-semibold px-1.5 py-0.5 rounded hover:bg-[#c41e3a]"
+                                >
+                                  Set main
+                                </button>
+                              )}
+                              <button
+                                type="button"
+                                onClick={() => clearSlot(i)}
+                                className="bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm shadow shrink-0"
+                              >
+                                ×
+                              </button>
+                            </div>
+                            <div className="absolute inset-x-0 bottom-0 bg-black/65 text-white px-1.5 py-1.5">
+                              <p className="text-[10px] font-semibold">Photo {i + 1}{isMain ? ' · Main' : ''}</p>
+                              {fileName && (
+                                <p className="text-[9px] text-white/80 truncate" title={fileName}>{fileName}</p>
+                              )}
+                              {slot?.kind === 'existing' && (
+                                <p className="text-[9px] text-white/70">Uploaded</p>
+                              )}
+                              {slot?.kind === 'new' && (
+                                <p className="text-[9px] text-amber-200">New · will upload on save</p>
+                              )}
+                            </div>
+                            <label className="absolute inset-0 cursor-pointer">
+                              <span className="sr-only">Change photo {i + 1}</span>
                               <input type="file" accept="image/*" className="hidden" onChange={(e) => onPickSlot(i, e)} />
                             </label>
                           </>
                         ) : (
-                          <label className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 cursor-pointer hover:bg-[#f0f0f0] transition">
+                          <label className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 cursor-pointer hover:bg-[#f0f0f0] transition p-2 text-center">
                             <Upload size={18} className="text-gray-400" />
-                            <span className="text-xs text-gray-500">Photo {i + 1}</span>
+                            <span className="text-xs text-gray-500 font-medium">
+                              {i === 0 ? 'Main photo' : `Photo ${i + 1}`}
+                            </span>
+                            <span className="text-[10px] text-gray-400">Tap to upload</span>
                             <input
                               type="file"
                               accept="image/*"
@@ -636,16 +630,33 @@ export default function AdminProducts() {
                     );
                   })}
                 </div>
+                {filledPhotos > 0 && (
+                  <div className="mt-3 flex items-center gap-3 p-3 rounded-xl bg-[#f7f8fa] border border-[#e4e7ec]">
+                    {photoSlots[0] && (
+                      <img
+                        src={photoSlots[0].kind === 'existing' ? photoSlots[0].url : photoSlots[0].preview}
+                        alt="Main preview"
+                        className="w-14 h-16 object-cover rounded-md ring-2 ring-[#c41e3a]"
+                      />
+                    )}
+                    <div className="text-sm">
+                      <p className="font-semibold text-[#0f1724]">Main pic preview</p>
+                      <p className="text-xs text-gray-500">
+                        Listing cards, search aur homepage pe pehli photo dikhegi.
+                      </p>
+                    </div>
+                  </div>
+                )}
               </section>
 
               <div className="flex flex-wrap gap-4 text-sm">
                 <label className="flex items-center gap-2">
                   <input type="checkbox" checked={form.is_featured} onChange={(e) => setForm({ ...form, is_featured: e.target.checked })} />
-                  Featured (Top Shelf)
+                  Featured
                 </label>
                 <label className="flex items-center gap-2">
                   <input type="checkbox" checked={form.is_new} onChange={(e) => setForm({ ...form, is_new: e.target.checked })} />
-                  New Arrival
+                  Highlight as New
                 </label>
                 <label className="flex items-center gap-2">
                   <input type="checkbox" checked={form.is_bestseller} onChange={(e) => setForm({ ...form, is_bestseller: e.target.checked })} />

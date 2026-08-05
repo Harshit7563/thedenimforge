@@ -5,16 +5,11 @@ import { getProductImages } from './product-images.js';
 import { BANNER_DATA } from './banner-images.js';
 
 const categories = [
-  { name: "Men's Jeans", slug: 'mens-jeans', description: 'Premium wholesale mens denim', sort_order: 1 },
-  { name: "Women's Jeans", slug: 'womens-jeans', description: 'Trendy womens denim wholesale', sort_order: 2 },
-  { name: 'Kids Jeans', slug: 'kids-jeans', description: 'Durable kids denim', sort_order: 3 },
-  { name: 'Slim Fit', slug: 'slim-fit', description: 'Slim fit collection', sort_order: 4 },
-  { name: 'Regular Fit', slug: 'regular-fit', description: 'Classic regular fit', sort_order: 5 },
-  { name: 'Bootcut', slug: 'bootcut', description: 'Bootcut & flare styles', sort_order: 6 },
-  { name: 'Distressed', slug: 'distressed', description: 'Ripped & distressed denim', sort_order: 7 },
-  { name: 'New Arrivals', slug: 'new-arrivals', description: 'Latest wholesale styles', sort_order: 8 },
-  { name: 'Bulk Orders', slug: 'bulk-orders', description: 'Volume pricing for larger wholesale buys', sort_order: 9 },
-  { name: 'Export Quality', slug: 'export-quality', description: 'International export grade', sort_order: 10 },
+  { name: "What's New", slug: 'new-arrivals', description: 'Latest wholesale styles', sort_order: 1 },
+  { name: "Men's", slug: 'mens-jeans', description: 'Premium wholesale mens denim', sort_order: 2 },
+  { name: "Women's", slug: 'womens-jeans', description: 'Trendy womens denim wholesale', sort_order: 3 },
+  { name: 'Kids', slug: 'kids-jeans', description: 'Durable kids denim', sort_order: 4 },
+  { name: 'Bulk Orders', slug: 'bulk-orders', description: 'Volume pricing for larger wholesale buys', sort_order: 5 },
 ];
 
 const brands = [
@@ -82,13 +77,6 @@ async function seed() {
       [b.title, b.subtitle, b.image_url, b.link_url, b.sort_order]
     );
   }
-
-  const hash = await bcrypt.hash('demo1234', 10);
-  await pool.query(
-    `INSERT INTO users (email, password_hash, first_name, last_name, phone, company_name, is_wholesale)
-     VALUES ($1,$2,$3,$4,$5,$6,$7) ON CONFLICT (email) DO NOTHING`,
-    ['demo@denimforge.com', hash, 'Demo', 'Buyer', '8424939262', 'CODEQUIP WEBTECH PRIVATE LIMITED', true]
-  );
 
   const adminHash = await bcrypt.hash('admin@denim2026', 10);
   await pool.query(

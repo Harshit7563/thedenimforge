@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { Navigate, useParams, useSearchParams } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 import { api, type Product } from '../lib/api';
+import { STOREFRONT_NAV, isStorefrontCategory } from '../lib/categories';
 
 export default function CategoryPage() {
   const { slug } = useParams();
@@ -11,14 +12,20 @@ export default function CategoryPage() {
   const sort = searchParams.get('sort') || 'newest';
 
   useEffect(() => {
+    if (!slug || !isStorefrontCategory(slug)) return;
     setLoading(true);
-    const params: Record<string, string> = { limit: '40' };
-    if (slug) params.category = slug;
+    const params: Record<string, string> = { limit: '40', category: slug };
     if (sort) params.sort = sort;
     api.getProducts(params).then(setProducts).catch(() => {}).finally(() => setLoading(false));
   }, [slug, sort]);
 
-  const title = slug?.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()) || 'Products';
+  if (slug && !isStorefrontCategory(slug)) {
+    return <Navigate to="/category/mens-jeans" replace />;
+  }
+
+  const title = STOREFRONT_NAV.find((n) => n.slug === slug)?.label
+    || slug?.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+    || 'Products';
 
   return (
     <div className="max-w-[1280px] mx-auto px-4 py-6 sm:py-8">

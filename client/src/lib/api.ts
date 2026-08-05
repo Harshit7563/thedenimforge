@@ -78,7 +78,10 @@ export const api = {
     return request<Product[]>(`/products${q}`);
   },
   getProduct: (slug: string) => request<Product>(`/products/${slug}`),
-  getCategories: () => request<Category[]>('/categories'),
+  getCategories: (params?: Record<string, string>) => {
+    const q = params ? '?' + new URLSearchParams(params).toString() : '';
+    return request<Category[]>(`/categories${q}`);
+  },
   getBanners: () => request<Banner[]>('/banners'),
   login: (email: string, password: string) =>
     request<{ user: User; token: string }>('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) }),

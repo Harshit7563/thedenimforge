@@ -170,7 +170,7 @@ router.put('/products/:id', adminMiddleware, async (req, res) => {
 
     const result = await pool.query(
       `UPDATE products SET name=$1, slug=$2, description=$3, short_description=$4, category_id=$5, brand_id=$6,
-       retail_price=$7, wholesale_price=$8, moq=$9, sku=$10, fabric=$11, fit=$12, wash=$13, images=$14,
+       retail_price=$7, wholesale_price=$8, moq=$9, sku=COALESCE($10, sku), fabric=$11, fit=$12, wash=$13, images=$14,
        sizes=$15, colors=$16, is_featured=$17, is_new=$18, is_bestseller=$19, stock=$20, size_stock=$21
        WHERE id=$22 RETURNING *`,
       [
@@ -183,7 +183,7 @@ router.put('/products/:id', adminMiddleware, async (req, res) => {
         d.retail_price,
         d.wholesale_price,
         d.moq,
-        d.sku,
+        d.sku || null,
         d.fabric,
         d.fit,
         d.wash,

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { api, type Banner } from '../lib/api';
@@ -8,6 +8,7 @@ import Logo from './Logo';
 export default function HeroCarousel() {
   const [banners, setBanners] = useState<Banner[]>([]);
   const [current, setCurrent] = useState(0);
+  const touchStartX = useRef<number | null>(null);
 
   useEffect(() => {
     api.getBanners().then(setBanners).catch(() => {});
@@ -19,23 +20,44 @@ export default function HeroCarousel() {
     return () => clearInterval(timer);
   }, [banners.length]);
 
+  const prev = () => setCurrent((c) => (c - 1 + banners.length) % banners.length);
+  const next = () => setCurrent((c) => (c + 1) % banners.length);
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const onTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current == null || banners.length <= 1) return;
+    const delta = e.changedTouches[0].clientX - touchStartX.current;
+    touchStartX.current = null;
+    if (Math.abs(delta) < 40) return;
+    if (delta > 0) prev();
+    else next();
+  };
+
   if (!banners.length) {
     return (
-      <section className="relative min-h-[82vh] sm:min-h-[90vh] bg-[#0f1724] flex items-end sm:items-center overflow-hidden">
+      <section className="relative min-h-[68dvh] sm:min-h-[90vh] bg-[#0f1724] flex items-end sm:items-center overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_25%_15%,rgba(42,61,85,0.6),transparent_55%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_90%_80%,rgba(196,30,58,0.12),transparent_45%)]" />
-        <div className="relative z-10 max-w-[1280px] mx-auto px-5 sm:px-8 pb-16 sm:pb-0 w-full">
-          <div className="reveal mb-8 sm:mb-10">
+        <div className="relative z-10 max-w-[1280px] mx-auto px-4 sm:px-8 pb-14 sm:pb-0 w-full">
+          <div className="reveal mb-5 sm:mb-10">
             <Logo variant="hero" />
           </div>
-          <p className="text-base sm:text-xl text-white/70 max-w-lg leading-relaxed reveal reveal-delay-1">
+          <p className="text-sm sm:text-xl text-white/70 max-w-lg leading-relaxed reveal reveal-delay-1">
             Factory-direct wholesale jeans for retailers and exporters — from ₹100/pc.
           </p>
-          <div className="mt-8 flex flex-wrap gap-3 reveal reveal-delay-2">
-            <Link to="/category/mens-jeans" className="btn-primary bg-white text-[#0f1724] hover:bg-[#c41e3a] hover:text-white">
+          <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row flex-wrap gap-2.5 sm:gap-3 reveal reveal-delay-2 w-full sm:w-auto">
+            <Link
+              to="/category/mens-jeans"
+              className="btn-primary bg-white text-[#0f1724] hover:bg-[#c41e3a] hover:text-white w-full sm:w-auto justify-center"
+            >
               Shop Collection
             </Link>
-            <Link to="/wholesale" className="btn-ghost">Wholesale Program</Link>
+            <Link to="/wholesale" className="btn-ghost w-full sm:w-auto justify-center">
+              Wholesale Program
+            </Link>
           </div>
         </div>
       </section>
@@ -43,11 +65,13 @@ export default function HeroCarousel() {
   }
 
   const banner = banners[current];
-  const prev = () => setCurrent((c) => (c - 1 + banners.length) % banners.length);
-  const next = () => setCurrent((c) => (c + 1) % banners.length);
 
   return (
-    <section className="relative min-h-[82vh] sm:min-h-[92vh] overflow-hidden bg-[#0f1724] group">
+    <section
+      className="relative min-h-[68dvh] sm:min-h-[92vh] overflow-hidden bg-[#0f1724] group"
+      onTouchStart={onTouchStart}
+      onTouchEnd={onTouchEnd}
+    >
       {banners.map((b, i) => (
         <div
           key={b.id}
@@ -56,34 +80,38 @@ export default function HeroCarousel() {
           <SafeImage
             src={b.image_url}
             alt={b.title}
-            className={`w-full h-full object-cover ${i === current ? 'hero-image-active' : ''}`}
+            className={`w-full h-full object-cover object-center ${i === current ? 'hero-image-active' : ''}`}
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#0f1724]/92 via-[#0f1724]/62 to-[#0f1724]/25" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0f1724]/75 via-transparent to-[#0f1724]/25" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0f1724] via-[#0f1724]/55 to-[#0f1724]/30 sm:bg-gradient-to-r sm:from-[#0f1724]/92 sm:via-[#0f1724]/62 sm:to-[#0f1724]/25" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0f1724]/80 via-transparent to-transparent sm:from-[#0f1724]/75" />
         </div>
       ))}
 
-      <div className="relative z-20 min-h-[82vh] sm:min-h-[92vh] flex items-end sm:items-center">
-        <div className="max-w-[1280px] mx-auto px-5 sm:px-8 pb-16 sm:pb-0 w-full">
-          {/* Brand is the hero signal — larger than any promo headline */}
-          <div className="reveal mb-6 sm:mb-8">
+      <div className="relative z-20 min-h-[68dvh] sm:min-h-[92vh] flex items-end sm:items-center">
+        <div className="max-w-[1280px] mx-auto px-4 sm:px-8 pb-16 sm:pb-0 w-full">
+          <div className="reveal mb-4 sm:mb-8">
             <Logo variant="hero" />
           </div>
 
-          <h2 className="font-display text-xl sm:text-2xl md:text-3xl font-semibold text-white/90 leading-snug max-w-xl reveal reveal-delay-1">
+          <p className="font-display text-base sm:text-2xl font-semibold text-white/88 leading-snug max-w-lg reveal reveal-delay-1">
             {banner.title}
-          </h2>
-          <p className="mt-3 sm:mt-4 text-sm sm:text-base text-white/65 max-w-md leading-relaxed reveal reveal-delay-2">
-            {banner.subtitle}
+          </p>
+          <p className="mt-2 sm:mt-4 text-[13px] sm:text-base text-white/60 max-w-md leading-relaxed reveal reveal-delay-2">
+            {banner.subtitle || 'Factory-direct wholesale jeans for retailers and exporters — from ₹100/pc.'}
           </p>
 
-          <div className="mt-7 sm:mt-9 flex flex-wrap gap-3 reveal reveal-delay-3">
+          <div className="mt-5 sm:mt-9 flex flex-col sm:flex-row flex-wrap gap-2.5 sm:gap-3 reveal reveal-delay-3">
             {banner.link_url && (
-              <Link to={banner.link_url} className="btn-primary bg-white text-[#0f1724] hover:bg-[#c41e3a] hover:text-white">
-                Shop Now
+              <Link
+                to={banner.link_url}
+                className="btn-primary bg-white text-[#0f1724] hover:bg-[#c41e3a] hover:text-white w-full sm:w-auto justify-center"
+              >
+                Shop Collection
               </Link>
             )}
-            <Link to="/wholesale" className="btn-ghost">Join Wholesale</Link>
+            <Link to="/wholesale" className="btn-ghost w-full sm:w-auto justify-center">
+              Join Wholesale
+            </Link>
           </div>
         </div>
       </div>
@@ -94,7 +122,7 @@ export default function HeroCarousel() {
             type="button"
             onClick={prev}
             aria-label="Previous slide"
-            className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 z-30 w-10 h-10 border border-white/30 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition hover:bg-white/10"
+            className="absolute left-2 sm:left-6 top-[42%] sm:top-1/2 -translate-y-1/2 z-30 w-9 h-9 sm:w-10 sm:h-10 border border-white/40 text-white flex items-center justify-center bg-black/20 sm:bg-transparent sm:opacity-0 sm:group-hover:opacity-100 transition hover:bg-white/10 touch-manipulation"
           >
             <ChevronLeft size={18} />
           </button>
@@ -102,18 +130,18 @@ export default function HeroCarousel() {
             type="button"
             onClick={next}
             aria-label="Next slide"
-            className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 z-30 w-10 h-10 border border-white/30 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition hover:bg-white/10"
+            className="absolute right-2 sm:right-6 top-[42%] sm:top-1/2 -translate-y-1/2 z-30 w-9 h-9 sm:w-10 sm:h-10 border border-white/40 text-white flex items-center justify-center bg-black/20 sm:bg-transparent sm:opacity-0 sm:group-hover:opacity-100 transition hover:bg-white/10 touch-manipulation"
           >
             <ChevronRight size={18} />
           </button>
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex gap-2">
+          <div className="absolute bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-30 flex gap-2">
             {banners.map((_, i) => (
               <button
                 key={i}
                 type="button"
                 aria-label={`Go to slide ${i + 1}`}
                 onClick={() => setCurrent(i)}
-                className={`h-[2px] transition-all ${i === current ? 'bg-white w-8' : 'bg-white/40 w-4'}`}
+                className={`h-1 sm:h-[2px] transition-all touch-manipulation ${i === current ? 'bg-white w-7 sm:w-8' : 'bg-white/40 w-3.5 sm:w-4'}`}
               />
             ))}
           </div>
