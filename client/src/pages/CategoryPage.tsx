@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Navigate, useParams, useSearchParams } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
-import { api, type Product } from '../lib/api';
+import { api, PRODUCT_LIST_LIMIT, type Product } from '../lib/api';
 import { STOREFRONT_NAV, isStorefrontCategory } from '../lib/categories';
 
 export default function CategoryPage() {
@@ -14,7 +14,7 @@ export default function CategoryPage() {
   useEffect(() => {
     if (!slug || !isStorefrontCategory(slug)) return;
     setLoading(true);
-    const params: Record<string, string> = { limit: '40', category: slug };
+    const params: Record<string, string> = { limit: PRODUCT_LIST_LIMIT, category: slug };
     if (sort) params.sort = sort;
     api.getProducts(params).then(setProducts).catch(() => {}).finally(() => setLoading(false));
   }, [slug, sort]);

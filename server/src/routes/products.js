@@ -6,6 +6,8 @@ const router = Router();
 router.get('/', async (req, res) => {
   try {
     const { category, brand, featured, is_new, bestseller, hot, search, sort, limit = 20, offset = 0 } = req.query;
+    const safeLimit = Math.min(Math.max(parseInt(limit, 10) || 20, 1), 1000);
+    const safeOffset = Math.max(parseInt(offset, 10) || 0, 0);
     let query = `
       SELECT p.*, c.name as category_name, c.slug as category_slug, b.name as brand_name, b.slug as brand_slug
       FROM products p
@@ -42,7 +44,7 @@ router.get('/', async (req, res) => {
     };
     query += ` ORDER BY ${sortMap[hot === 'true' && !sort ? 'hot' : sort] || 'p.created_at DESC'}`;
     query += ` LIMIT $${idx++} OFFSET $${idx}`;
-    params.push(parseInt(limit), parseInt(offset));
+    params.push(safeLimit, safeOffset);
 
     const result = await pool.query(query, params);
     res.json(result.rows);

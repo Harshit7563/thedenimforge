@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
-import { api, type Product } from '../lib/api';
+import { api, PRODUCT_LIST_LIMIT, type Product } from '../lib/api';
 
 export default function SearchPage() {
   const [searchParams] = useSearchParams();
@@ -14,7 +14,7 @@ export default function SearchPage() {
 
   useEffect(() => {
     setLoading(true);
-    const params: Record<string, string> = { limit: hot ? '60' : '40' };
+    const params: Record<string, string> = { limit: PRODUCT_LIST_LIMIT };
     if (q) params.search = q;
     if (featured) params.featured = 'true';
     if (bestseller) params.bestseller = 'true';

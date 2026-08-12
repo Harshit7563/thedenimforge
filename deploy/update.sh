@@ -37,6 +37,14 @@ else
   echo "    PM2 not found — start API manually"
 fi
 
+# Nginx serves /var/www/thedenimforge — sync dist if deploy dir differs
+NGINX_ROOT="/var/www/thedenimforge"
+if [ -d "$NGINX_ROOT/client" ] && [ "$APP_DIR" != "$NGINX_ROOT" ]; then
+  echo "==> Syncing build to Nginx root ($NGINX_ROOT)..."
+  mkdir -p "$NGINX_ROOT/client"
+  rsync -a --delete "$APP_DIR/client/dist/" "$NGINX_ROOT/client/dist/"
+fi
+
 echo ""
 echo "==> Update complete!"
 echo "    Site: https://thedenimforge.com"

@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import HeroCarousel from '../components/HeroCarousel';
 import ProductCard from '../components/ProductCard';
 import Newsletter from '../components/Newsletter';
-import { api, type Product, type Category } from '../lib/api';
+import { api, PRODUCT_LIST_LIMIT, type Product, type Category } from '../lib/api';
 import { getCategoryImage } from '../lib/images';
 import SafeImage from '../components/SafeImage';
 import { STOREFRONT_NAV, isStorefrontCategory } from '../lib/categories';
@@ -33,7 +33,7 @@ export default function HomePage() {
 
   useEffect(() => {
     Promise.all([
-      api.getProducts({ limit: '50' }),
+      api.getProducts({ limit: PRODUCT_LIST_LIMIT }),
       api.getCategories(),
     ])
       .then(([p, c]) => {

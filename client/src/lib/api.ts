@@ -72,6 +72,9 @@ export interface User {
   is_wholesale: boolean;
 }
 
+/** Storefront listings — high enough to show full wholesale catalog */
+export const PRODUCT_LIST_LIMIT = '500';
+
 export const api = {
   getProducts: (params?: Record<string, string>) => {
     const q = params ? '?' + new URLSearchParams(params).toString() : '';
