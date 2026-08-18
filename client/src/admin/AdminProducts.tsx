@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type FormEvent, type ChangeEvent, type ReactNode } from 'react';
 import { adminApi } from '../lib/adminApi';
 import { api, type Category } from '../lib/api';
-import { ADMIN_PRODUCT_CATEGORY_SLUGS, UNLIMITED_STOCK } from '../lib/categories';
+import { ADMIN_PRODUCT_CATEGORY_SLUGS, UNLIMITED_STOCK, MIN_ORDER_QTY } from '../lib/categories';
 import { Trash2, Plus, X, Upload, Pencil, Star } from 'lucide-react';
 
 const MENS_SIZES = ['28', '30', '32', '34', '36', '38', '40', '42'];
@@ -253,7 +253,7 @@ export default function AdminProducts() {
         brand_id: null,
         retail_price: Number(form.retail_price || form.wholesale_price),
         wholesale_price: Number(form.wholesale_price),
-        moq: Number(form.moq) || 1,
+        moq: MIN_ORDER_QTY,
         stock,
         size_stock,
         sizes: enabledSizes,
@@ -486,13 +486,9 @@ export default function AdminProducts() {
                   )}
                   {field(
                     'MOQ (min pieces)',
-                    <input
-                      type="number"
-                      min="1"
-                      value={form.moq}
-                      onChange={(e) => setForm({ ...form, moq: e.target.value })}
-                      className={inputClass}
-                    />
+                    <p className="h-10 flex items-center text-sm font-semibold text-[#0f1724]">
+                      {MIN_ORDER_QTY} piece (fixed)
+                    </p>
                   )}
                 </div>
                 <p className="text-xs text-gray-400">SKU automatic generate hoga (jaise DF-482913).</p>

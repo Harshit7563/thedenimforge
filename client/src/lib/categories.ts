@@ -18,6 +18,7 @@ export const ADMIN_PRODUCT_CATEGORY_SLUGS = [
 export const VIRTUAL_ALL_PRODUCT_SLUGS = ['new-arrivals', 'bulk-orders'] as const;
 
 export const UNLIMITED_STOCK = 99999;
+export const MIN_ORDER_QTY = 1;
 
 export type StorefrontCategorySlug = (typeof STOREFRONT_CATEGORY_SLUGS)[number];
 

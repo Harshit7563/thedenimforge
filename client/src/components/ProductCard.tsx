@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { type Product, formatPrice } from '../lib/api';
 import { FALLBACK_IMAGE } from '../lib/images';
+import { MIN_ORDER_QTY } from '../lib/categories';
 import SafeImage from './SafeImage';
 
 interface Props {
@@ -93,7 +94,7 @@ export default function ProductCard({ product, showHotBadge }: Props) {
               </div>
             </div>
             <span className="shrink-0 rounded-full bg-[#0f1724] px-1.5 sm:px-2.5 py-0.5 sm:py-1 text-[8px] sm:text-[10px] font-semibold text-white">
-              MOQ {product.moq}
+              MOQ {MIN_ORDER_QTY}
             </span>
           </div>
         </div>

@@ -24,7 +24,9 @@ async function migrate() {
     ALTER TABLE products ADD COLUMN IF NOT EXISTS size_stock JSONB DEFAULT '{}'
   `);
 
-  console.log('Migration complete: is_admin + shipping_addresses + size_stock.');
+  await pool.query('UPDATE products SET moq = 1 WHERE moq IS NULL OR moq <> 1');
+
+  console.log('Migration complete: is_admin + shipping_addresses + size_stock + moq=1.');
   await pool.end();
 }
 

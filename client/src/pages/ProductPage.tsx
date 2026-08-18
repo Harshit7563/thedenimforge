@@ -13,6 +13,7 @@ import ProductCard from '../components/ProductCard';
 import Section from '../components/Section';
 import SafeImage from '../components/SafeImage';
 import { FALLBACK_IMAGE } from '../lib/images';
+import { MIN_ORDER_QTY } from '../lib/categories';
 import { SIZE_CHART, MENS_SIZE_CHART, WOMENS_SIZE_CHART, KIDS_SIZE_CHART } from '../lib/sizeChart';
 
 function parseJsonField<T>(val: T | string, fallback: T): T {
@@ -65,7 +66,7 @@ export default function ProductPage() {
         setProduct(p);
         const sizes = parseJsonField(p.sizes, ['32']);
         setSize(sizes[0] || '32');
-        setQuantity(p.moq || 1);
+        setQuantity(MIN_ORDER_QTY);
         setActiveImage(0);
         if (p.category_slug) {
           api.getProducts({ category: p.category_slug, limit: '5' })
@@ -138,7 +139,7 @@ export default function ProductPage() {
   ];
 
   const bulkTiers = [
-    { range: `${product.moq}+ pcs`, price: wholesalePrice, label: 'Wholesale' },
+    { range: `${MIN_ORDER_QTY}+ pcs`, price: wholesalePrice, label: 'Wholesale' },
     { range: '50+ pcs', price: null, label: 'Volume quote' },
     { range: '100+ pcs', price: null, label: 'Bulk quote' },
     { range: '500+ pcs', price: null, label: 'Custom / export' },
@@ -250,7 +251,7 @@ export default function ProductPage() {
                 <span className="text-base text-gray-400 line-through">{formatPrice(product.retail_price)}</span>
                 <span className="text-xs bg-[#e11d48] text-white px-2 py-0.5 rounded font-bold">WHOLESALE</span>
               </div>
-              <p className="text-xs text-gray-500 mt-1">per piece · MOQ {product.moq} pcs{product.sku ? ` · SKU: ${product.sku}` : ''}</p>
+              <p className="text-xs text-gray-500 mt-1">per piece · MOQ {MIN_ORDER_QTY} pc{product.sku ? ` · SKU: ${product.sku}` : ''}</p>
               {product.stock !== undefined && (
                 <p className={`text-xs mt-1 font-medium ${Number(product.stock) >= 99999 ? 'text-green-600' : product.stock > 100 ? 'text-green-600' : 'text-amber-600'}`}>
                   {Number(product.stock) >= 99999
@@ -308,16 +309,16 @@ export default function ProductPage() {
                 </Link>
               </div>
               <div>
-                <label className="text-sm font-semibold mb-2 block">Quantity <span className="font-normal text-gray-400">(min {product.moq})</span></label>
+                <label className="text-sm font-semibold mb-2 block">Quantity <span className="font-normal text-gray-400">(min {MIN_ORDER_QTY})</span></label>
                 <div className="flex items-center gap-3">
-                  <button type="button" onClick={() => setQuantity(Math.max(product.moq, quantity - 1))} className="w-11 h-11 border border-[#e8e8e8] rounded-xl flex items-center justify-center hover:border-[#1a1a1a] active:scale-95 transition">
+                  <button type="button" onClick={() => setQuantity(Math.max(MIN_ORDER_QTY, quantity - 1))} className="w-11 h-11 border border-[#e8e8e8] rounded-xl flex items-center justify-center hover:border-[#1a1a1a] active:scale-95 transition">
                     <Minus size={16} />
                   </button>
                   <input
                     type="number"
-                    min={product.moq}
+                    min={MIN_ORDER_QTY}
                     value={quantity}
-                    onChange={(e) => setQuantity(Math.max(product.moq, parseInt(e.target.value) || product.moq))}
+                    onChange={(e) => setQuantity(Math.max(MIN_ORDER_QTY, parseInt(e.target.value) || MIN_ORDER_QTY))}
                     className="w-20 h-11 text-center text-lg font-semibold border border-[#e8e8e8] rounded-xl focus:outline-none focus:border-[#1a1a1a]"
                   />
                   <button type="button" onClick={() => setQuantity(quantity + 1)} className="w-11 h-11 border border-[#e8e8e8] rounded-xl flex items-center justify-center hover:border-[#1a1a1a] active:scale-95 transition">
@@ -396,7 +397,7 @@ export default function ProductPage() {
                         ['Fabric', product.fabric],
                         ['Wash', product.wash],
                         ['SKU', product.sku || 'N/A'],
-                        ['MOQ', `${product.moq} pieces`],
+                        ['MOQ', `${MIN_ORDER_QTY} piece`],
                         ['Available Sizes', sizes.join(', ')],
                       ].map(([k, v]) => (
                         <tr key={k} className="border-b border-[#f0f0f0]">
