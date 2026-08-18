@@ -162,8 +162,30 @@ input, select, textarea, button {
   touch-action: manipulation;
 }
 
-@media (max-width: 640px) {
-  input, select, textarea {
-    font-size: 16px;
-  }
+@keyframes slider-zoom {
+  from { transform: scale(1.04); }
+  to { transform: scale(1.12); }
+}
+
+.slider-img-active {
+  animation: slider-zoom 7.5s ease-out forwards;
+}
+
+@keyframes slider-copy {
+  from { opacity: 0; transform: translateY(28px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.slider-copy-in {
+  animation: slider-copy 0.75s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes slider-progress {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+.slider-progress-fill {
+  transform-origin: left center;
+  animation: slider-progress 7s linear forwards;
 }
