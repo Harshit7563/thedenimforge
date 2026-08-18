@@ -133,7 +133,7 @@ router.post('/products', adminMiddleware, async (req, res) => {
         d.brand_id || null,
         d.retail_price || d.wholesale_price,
         d.wholesale_price,
-        d.moq = 1,
+        1,
         sku,
         d.fabric || '',
         d.fit || '',
