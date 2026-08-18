@@ -20,28 +20,28 @@ export default function Newsletter() {
   };
 
   return (
-    <section className="border-t border-[#e4e7ec] bg-white py-14 sm:py-16">
-      <div className="max-w-xl mx-auto px-4 text-center">
-        <p className="text-[11px] tracking-[0.28em] uppercase text-[#c41e3a] font-semibold mb-3">Newsletter</p>
-        <h3 className="font-display text-2xl sm:text-3xl font-bold text-[#0f1724] mb-3">
-          Stay ahead of the drop
+    <section className="bg-[#f6f4f0] py-14 sm:py-20">
+      <div className="max-w-2xl mx-auto px-4 text-center">
+        <p className="text-[11px] tracking-[0.28em] uppercase text-[#c8102e] font-semibold mb-3">Stay in the loop</p>
+        <h3 className="font-display text-3xl sm:text-5xl font-bold text-[#111] mb-3">
+          New drops & wholesale offers
         </h3>
-        <p className="text-sm text-[#5c6775] mb-7 leading-relaxed">
-          Wholesale offers and new denim arrivals, straight to your inbox.
+        <p className="text-sm text-[#6b6b6b] mb-8">
+          Be first to know when fresh denim lands.
         </p>
-        <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2">
+        <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row">
           <input
             type="email"
             required
             placeholder="Enter your email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="flex-1 h-12 border border-[#e4e7ec] px-4 text-sm bg-[#f7f8fa] focus:outline-none focus:border-[#0f1724] focus:bg-white transition"
+            className="flex-1 h-12 border border-[#111] px-4 text-sm bg-white focus:outline-none"
           />
           <button
             type="submit"
             disabled={loading}
-            className="h-12 bg-[#0f1724] text-white px-8 text-sm font-semibold hover:bg-[#c41e3a] transition disabled:opacity-50 shrink-0"
+            className="h-12 bg-[#111] text-white px-8 text-xs font-bold uppercase tracking-[0.16em] hover:bg-[#c8102e] transition disabled:opacity-50"
           >
             {loading ? 'Sending...' : 'Subscribe'}
           </button>

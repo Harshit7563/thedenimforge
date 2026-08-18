@@ -221,7 +221,7 @@ export default function ProductPage() {
                     {product.category_name}
                   </p>
                 )}
-                <h1 className="text-xl sm:text-2xl lg:text-[28px] font-bold text-[#1a1a1a] mt-1 mb-2 leading-snug tracking-tight">
+                <h1 className="text-xl sm:text-2xl lg:text-[28px] font-bold text-[#111] mt-1 mb-2 leading-snug tracking-tight" style={{ fontFamily: 'var(--font-sans)', textTransform: 'none' }}>
                   {product.name}
                 </h1>
               </div>

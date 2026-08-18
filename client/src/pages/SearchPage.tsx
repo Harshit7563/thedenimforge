@@ -23,26 +23,26 @@ export default function SearchPage() {
   }, [q, featured, bestseller, hot]);
 
   const title = q
-    ? `Results for "${q}"`
+    ? `Results for “${q}”`
     : featured
-      ? 'Top Shelf'
+      ? 'Featured'
       : bestseller
         ? 'Bestsellers'
         : hot
-          ? 'Hot Products'
+          ? 'Trending'
           : 'All Products';
 
   return (
-    <div className="max-w-[1280px] mx-auto px-4 py-6 sm:py-8">
-      <h1 className="text-xl sm:text-2xl font-bold text-[#1a1a1a] tracking-tight mb-1">{title}</h1>
-      <p className="text-sm text-gray-500 mb-6">{products.length} products</p>
+    <div className="max-w-[1440px] mx-auto px-4 sm:px-8 py-8 sm:py-12">
+      <h1 className="font-display text-4xl sm:text-6xl font-bold text-[#111] tracking-[0.04em] mb-2">{title}</h1>
+      <p className="text-sm text-[#6b6b6b] mb-8">{products.length} products</p>
 
       {loading ? (
-        <p className="text-center py-20 text-gray-400">Loading...</p>
+        <p className="text-center py-20 text-[#8a8a8a]">Loading...</p>
       ) : products.length === 0 ? (
-        <p className="text-center py-20 text-gray-500">No products found.</p>
+        <p className="text-center py-20 text-[#6b6b6b]">No products found.</p>
       ) : (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-3 gap-y-8 sm:gap-x-5 sm:gap-y-10">
           {products.map((p) => <ProductCard key={p.id} product={p} />)}
         </div>
       )}
