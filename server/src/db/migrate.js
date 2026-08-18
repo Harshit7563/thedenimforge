@@ -26,7 +26,16 @@ async function migrate() {
 
   await pool.query('UPDATE products SET moq = 1 WHERE moq IS NULL OR moq <> 1');
 
-  console.log('Migration complete: is_admin + shipping_addresses + size_stock + moq=1.');
+  await pool.query(`
+    UPDATE banners SET image_url = CASE sort_order
+      WHEN 1 THEN '/images/banners/hero-ai-1.jpg'
+      WHEN 2 THEN '/images/banners/hero-ai-2.jpg'
+      WHEN 3 THEN '/images/banners/hero-ai-3.jpg'
+      ELSE image_url
+    END
+  `);
+
+  console.log('Migration complete: is_admin + shipping_addresses + size_stock + moq=1 + banner images.');
   await pool.end();
 }
 

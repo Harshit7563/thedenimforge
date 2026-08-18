@@ -1,8 +1,8 @@
 /** Hero slider — AI jeans photos, The Denim Forge only (no third-party brands) */
 export const BANNER_SLIDER_IMAGES = [
-  '/images/banners/slider-denim-stack.jpg',
-  '/images/banners/slider-denim-fold.jpg',
-  '/images/banners/slider-denim-bulk.jpg',
+  '/images/banners/hero-ai-1.jpg',
+  '/images/banners/hero-ai-2.jpg',
+  '/images/banners/hero-ai-3.jpg',
 ];
 
 export const BANNER_DOWNLOADS = [];

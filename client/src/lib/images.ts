@@ -6,9 +6,9 @@ export const PRODUCT_IMAGES = [
 ];
 
 export const BANNER_IMAGES = [
-  '/images/banners/slider-denim-stack.jpg',
-  '/images/banners/slider-denim-fold.jpg',
-  '/images/banners/slider-denim-bulk.jpg',
+  '/images/banners/hero-ai-1.jpg',
+  '/images/banners/hero-ai-2.jpg',
+  '/images/banners/hero-ai-3.jpg',
 ];
 
 const CAT_V = 'v2';

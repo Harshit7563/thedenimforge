@@ -2,28 +2,33 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { api, type Banner } from '../lib/api';
-import { BANNER_IMAGES } from '../lib/images';
+
+const AI_BACKGROUNDS = [
+  '/images/banners/hero-ai-1.jpg',
+  '/images/banners/hero-ai-2.jpg',
+  '/images/banners/hero-ai-3.jpg',
+];
 
 const FALLBACK_SLIDES: Banner[] = [
   {
     id: 1,
     title: 'Live in denim',
     subtitle: 'Factory-direct wholesale jeans from ₹100/pc · MOQ 1',
-    image_url: '/images/banners/hero-jeans-1.jpg',
+    image_url: AI_BACKGROUNDS[0],
     link_url: '/category/mens-jeans',
   },
   {
     id: 2,
     title: 'New season 2026',
     subtitle: 'Fresh fits, export-grade wash · ready for retailers',
-    image_url: '/images/banners/hero-jeans-2.jpg',
+    image_url: AI_BACKGROUNDS[1],
     link_url: '/category/new-arrivals',
   },
   {
     id: 3,
     title: 'Wholesale drop',
     subtitle: 'Bulk pricing for distributors and exporters',
-    image_url: '/images/banners/hero-jeans-3.jpg',
+    image_url: AI_BACKGROUNDS[2],
     link_url: '/wholesale',
   },
 ];
@@ -43,7 +48,7 @@ export default function HeroCarousel() {
         setBanners(
           rows.map((b, i) => ({
             ...b,
-            image_url: b.image_url || BANNER_IMAGES[i % BANNER_IMAGES.length],
+            image_url: AI_BACKGROUNDS[i % AI_BACKGROUNDS.length],
           }))
         );
       })
