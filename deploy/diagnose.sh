@@ -41,3 +41,7 @@ echo ""
 
 echo "==> Dist bundle"
 grep -o 'assets/index-[^"]*\.js' "$NGINX_ROOT/client/dist/index.html" 2>/dev/null || echo "index.html missing in nginx root"
+echo ""
+
+echo "==> SSL certificate (should be thedenimforge.com)"
+echo | openssl s_client -connect thedenimforge.com:443 -servername thedenimforge.com 2>/dev/null | openssl x509 -noout -subject 2>/dev/null || echo "Could not read SSL cert"
