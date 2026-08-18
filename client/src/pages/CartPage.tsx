@@ -36,93 +36,80 @@ export default function CartPage() {
   const total = subtotal + shipping;
 
   if (loading) {
-    return <div className="max-w-5xl mx-auto px-4 py-20 text-center text-gray-400 animate-pulse">Loading cart...</div>;
+    return <div className="max-w-5xl mx-auto px-4 py-20 text-center text-[#8a8a8a]">Loading bag…</div>;
   }
 
   if (!items.length) {
     return (
       <div className="max-w-md mx-auto px-4 py-16 sm:py-24 text-center">
-        <ShoppingBag size={48} className="mx-auto text-gray-200 mb-4" />
-        <h1 className="text-xl font-bold text-[#1a1a1a] mb-2">Your Cart is Empty</h1>
-        <p className="text-sm text-gray-500 mb-6">Browse our wholesale denim collection and add items.</p>
-        <Link to="/" className="inline-block bg-[#1a1a1a] text-white px-8 py-3 rounded-full text-sm font-semibold hover:bg-[#333] transition">
-          Continue Shopping
-        </Link>
+        <ShoppingBag size={48} className="mx-auto text-[#ddd] mb-4" />
+        <h1 className="font-display text-3xl font-bold mb-2">Your bag is empty</h1>
+        <p className="text-sm text-[#6b6b6b] mb-6">Browse wholesale denim and add styles to your bag.</p>
+        <Link to="/" className="btn-primary">Continue shopping</Link>
       </div>
     );
   }
 
   return (
-    <div className="pb-28 md:pb-10">
-      <div className="max-w-5xl mx-auto px-4 py-6 sm:py-8">
-        <div className="flex items-center gap-2 text-xs text-gray-400 mb-6">
-          <span className="text-[#1a1a1a] font-medium">Cart</span>
-          <span>→</span>
-          <span>Checkout</span>
-          <span>→</span>
-          <span>Confirmation</span>
-        </div>
+    <div className="pb-28 lg:pb-16">
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-8 sm:py-12">
+        <p className="text-[11px] uppercase tracking-[0.22em] text-[#6b6b6b] mb-2">Bag → Checkout → Done</p>
+        <h1 className="font-display text-4xl sm:text-5xl font-bold mb-1">Shopping bag</h1>
+        <p className="text-sm text-[#6b6b6b] mb-8">{items.length} styles · {totalQty} pieces</p>
 
-        <h1 className="text-xl sm:text-2xl font-bold text-[#1a1a1a] mb-1">Shopping Cart</h1>
-        <p className="text-sm text-gray-500 mb-6">{items.length} styles · {totalQty} pieces</p>
-
-        <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
-          <div className="lg:col-span-2 space-y-3">
+        <div className="grid lg:grid-cols-3 gap-8 lg:gap-12">
+          <div className="lg:col-span-2 divide-y divide-[#e8e8e8] border-y border-[#e8e8e8]">
             {items.map((item) => (
-              <div key={item.id} className="flex gap-3 sm:gap-4 border border-[#f0f0f0] rounded-2xl p-3 sm:p-4 bg-white">
-                <Link to={`/product/${item.slug}`} className="w-20 h-24 sm:w-24 sm:h-28 rounded-xl overflow-hidden shrink-0 bg-[#f5f5f5]">
+              <div key={item.id} className="flex gap-4 py-5">
+                <Link to={`/product/${item.slug}`} className="w-24 h-32 sm:w-28 sm:h-36 overflow-hidden shrink-0 bg-[#efece6]">
                   <SafeImage src={getImage(item.images)} alt={item.name} className="w-full h-full object-cover" />
                 </Link>
                 <div className="flex-1 min-w-0">
-                  <Link to={`/product/${item.slug}`} className="font-medium text-sm sm:text-base text-[#1a1a1a] hover:text-[#e11d48] line-clamp-2 leading-snug">
+                  <Link to={`/product/${item.slug}`} className="font-medium text-sm sm:text-base hover:underline line-clamp-2">
                     {item.name}
                   </Link>
-                  <p className="text-xs text-gray-500 mt-1.5">Size {item.size}</p>
-                  <p className="text-xs text-gray-400">Qty {item.quantity} · {formatPrice(item.wholesale_price)}/pc</p>
-                  <p className="text-base font-bold text-[#1a1a1a] mt-1.5">
+                  <p className="text-xs text-[#6b6b6b] mt-2">Size {item.size} · Qty {item.quantity}</p>
+                  <p className="text-sm mt-1">{formatPrice(item.wholesale_price)} / pc</p>
+                  <p className="text-base font-bold mt-2">
                     {formatPrice(parseFloat(item.wholesale_price) * item.quantity)}
                   </p>
                 </div>
-                <button type="button" onClick={() => remove(item.id)} className="text-gray-300 hover:text-[#e11d48] self-start p-1" aria-label="Remove">
+                <button type="button" onClick={() => remove(item.id)} className="text-[#aaa] hover:text-[#c8102e] self-start p-1" aria-label="Remove">
                   <Trash2 size={18} />
                 </button>
               </div>
             ))}
           </div>
 
-          <div className="lg:col-span-1">
-            <div className="bg-[#faf9f7] border border-[#f0f0f0] rounded-2xl p-5 sticky top-28">
-              <h2 className="font-semibold text-[#1a1a1a] mb-4">Order Summary</h2>
+          <div>
+            <div className="bg-[#f6f4f0] p-6 sticky top-32">
+              <h2 className="font-display text-xl font-bold mb-4">Order summary</h2>
               <div className="space-y-2 text-sm">
-                <div className="flex justify-between"><span className="text-gray-500">Subtotal ({totalQty} pcs)</span><span>{formatPrice(subtotal)}</span></div>
-                <div className="flex justify-between"><span className="text-gray-500">Shipping</span><span>{shipping === 0 ? 'FREE' : formatPrice(shipping)}</span></div>
-                {subtotal < 25000 && <p className="text-xs text-green-600">Free shipping on orders above ₹25,000</p>}
-                <div className="flex justify-between pt-3 border-t border-[#e8e8e8] font-bold text-base">
+                <div className="flex justify-between"><span className="text-[#6b6b6b]">Subtotal ({totalQty} pcs)</span><span>{formatPrice(subtotal)}</span></div>
+                <div className="flex justify-between"><span className="text-[#6b6b6b]">Shipping</span><span>{shipping === 0 ? 'FREE' : formatPrice(shipping)}</span></div>
+                {subtotal < 25000 && <p className="text-xs text-[#1a7a3a]">Free shipping above ₹25,000</p>}
+                <div className="flex justify-between pt-3 border-t border-[#e0ddd6] font-bold text-base">
                   <span>Total</span><span>{formatPrice(total)}</span>
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={() => navigate('/checkout')}
-                className="w-full mt-5 h-12 bg-[#1a1a1a] text-white rounded-full font-semibold flex items-center justify-center gap-2 hover:bg-[#333] transition"
-              >
-                Proceed to Checkout <ArrowRight size={16} />
+              <button type="button" onClick={() => navigate('/checkout')} className="btn-primary w-full mt-6">
+                Checkout <ArrowRight size={16} className="ml-1" />
               </button>
-              <p className="text-[10px] text-gray-400 text-center mt-3 flex items-center justify-center gap-1">
-                <ShieldCheck size={12} /> Secure wholesale checkout
+              <p className="text-[10px] text-[#8a8a8a] text-center mt-3 flex items-center justify-center gap-1 uppercase tracking-[0.12em]">
+                <ShieldCheck size={12} /> Secure checkout
               </p>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-white border-t border-[#e8e8e8] px-4 py-3 safe-bottom shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
+      <div className="fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-white border-t border-[#e8e8e8] px-4 py-3 safe-bottom">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <p className="text-xs text-gray-500">Total ({totalQty} pcs)</p>
-            <p className="text-xl font-bold text-[#1a1a1a]">{formatPrice(total)}</p>
+            <p className="text-[10px] uppercase tracking-[0.12em] text-[#6b6b6b]">Total</p>
+            <p className="text-xl font-bold">{formatPrice(total)}</p>
           </div>
-          <button type="button" onClick={() => navigate('/checkout')} className="flex-1 max-w-[200px] h-11 bg-[#1a1a1a] text-white rounded-full font-semibold text-sm">
+          <button type="button" onClick={() => navigate('/checkout')} className="flex-1 max-w-[200px] h-12 bg-[#111] text-white text-xs font-bold uppercase tracking-[0.16em]">
             Checkout
           </button>
         </div>

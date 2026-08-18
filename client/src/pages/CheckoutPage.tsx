@@ -235,7 +235,7 @@ export default function CheckoutPage() {
               <button
                 type="submit"
                 disabled={placing}
-                className="w-full mt-5 h-12 bg-[#1a1a1a] text-white rounded-full font-semibold hover:bg-[#333] transition disabled:opacity-50 hidden md:flex items-center justify-center gap-2"
+                className="btn-primary w-full mt-5 hidden md:flex"
               >
                 {submitLabel}
               </button>
@@ -254,7 +254,7 @@ export default function CheckoutPage() {
             <p className="text-xs text-gray-500">Total ({totalQty} pcs)</p>
             <p className="text-xl font-bold text-[#1a1a1a]">{formatPrice(total)}</p>
           </div>
-          <button type="submit" form="checkout-form" disabled={placing} className="flex-1 max-w-[200px] h-11 bg-[#1a1a1a] text-white rounded-full font-semibold text-sm disabled:opacity-50">
+          <button type="submit" form="checkout-form" disabled={placing} className="flex-1 max-w-[200px] h-12 bg-[#111] text-white text-xs font-bold uppercase tracking-[0.14em] disabled:opacity-50">
             {submitLabel}
           </button>
         </div>

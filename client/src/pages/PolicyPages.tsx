@@ -11,15 +11,15 @@ const UPDATED = 'August 5, 2026';
 
 function PolicyLayout({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8 sm:py-12">
-      <nav className="text-xs text-gray-400 mb-6">
-        <Link to="/" className="hover:text-[#1a1a1a]">
+    <div className="max-w-3xl mx-auto px-4 sm:px-8 py-8 sm:py-14">
+      <nav className="text-[11px] uppercase tracking-[0.14em] text-[#6b6b6b] mb-6">
+        <Link to="/" className="hover:text-[#111]">
           Home
         </Link>
         <span className="mx-2">/</span>
-        <span className="text-[#1a1a1a]">{title}</span>
+        <span className="text-[#111]">{title}</span>
       </nav>
-      <h1 className="text-2xl sm:text-3xl font-bold text-[#1a1a1a] mb-2 tracking-tight">{title}</h1>
+      <h1 className="font-display text-3xl sm:text-5xl font-bold mb-3">{title}</h1>
       <p className="text-sm text-gray-500 mb-2">
         Operated by <strong className="text-[#1a1a1a]">{COMPANY}</strong>
       </p>

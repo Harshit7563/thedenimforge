@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Ruler } from 'lucide-react';
 import {
   MENS_SIZE_CHART,
   WOMENS_SIZE_CHART,
@@ -27,7 +26,7 @@ function SizeTable({ rows }: { rows: SizeRow[] }) {
     <div className="overflow-x-auto border border-[#e4e7ec]">
       <table className="w-full text-sm min-w-[480px]">
         <thead>
-          <tr className="bg-[#0f1724] text-white">
+          <tr className="bg-[#111] text-white">
             <th className="py-3 px-4 text-left font-semibold tracking-wide">Size</th>
             <th className="py-3 px-4 text-left font-semibold tracking-wide">Waist</th>
             <th className="py-3 px-4 text-left font-semibold tracking-wide">Hip</th>
@@ -58,22 +57,15 @@ export default function SizeChartPage() {
   const [tab, setTab] = useState<ChartTab>('mens');
 
   return (
-    <div className="max-w-[900px] mx-auto px-4 sm:px-6 py-10 sm:py-14">
-      <nav className="text-xs text-[#5c6775] mb-6">
-        <Link to="/" className="hover:text-[#0f1724]">Home</Link>
+    <div className="max-w-[900px] mx-auto px-4 sm:px-8 py-10 sm:py-16">
+      <nav className="text-[11px] uppercase tracking-[0.14em] text-[#6b6b6b] mb-6">
+        <Link to="/" className="hover:text-[#111]">Home</Link>
         <span className="mx-2">/</span>
-        <span className="text-[#0f1724]">Size Chart</span>
+        <span className="text-[#111]">Size Chart</span>
       </nav>
 
-      <div className="flex items-start gap-3 mb-3">
-        <Ruler className="text-[#c41e3a] mt-1 shrink-0" size={28} strokeWidth={1.75} />
-        <div>
-          <p className="text-[11px] tracking-[0.28em] uppercase text-[#c41e3a] font-semibold mb-1">Fit guide</p>
-          <h1 className="font-display text-3xl sm:text-4xl font-bold text-[#0f1724] tracking-tight">
-            Size Chart
-          </h1>
-        </div>
-      </div>
+      <p className="text-[11px] tracking-[0.28em] uppercase text-[#c8102e] font-semibold mb-2">Fit guide</p>
+      <h1 className="font-display text-4xl sm:text-6xl font-bold mb-4">Size chart</h1>
       <p className="text-[#5c6775] mb-8 max-w-2xl leading-relaxed">
         Use these measurements to pick the right wholesale jeans size. Values are in inches and approximate —
         fabric stretch and wash can vary slightly by style.
@@ -87,8 +79,8 @@ export default function SizeChartPage() {
             onClick={() => setTab(t.id)}
             className={`px-5 py-2.5 text-sm font-semibold transition ${
               tab === t.id
-                ? 'bg-[#0f1724] text-white'
-                : 'bg-[#eef1f5] text-[#5c6775] hover:text-[#0f1724]'
+                ? 'bg-[#111] text-white'
+                : 'bg-[#f6f4f0] text-[#6b6b6b] hover:text-[#111]'
             }`}
           >
             {t.label}

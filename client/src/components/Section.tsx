@@ -14,13 +14,13 @@ export default function Section({ title, subtitle, viewAllLink, children, classN
     <section className={`max-w-[1280px] mx-auto px-4 sm:px-6 py-12 sm:py-16 ${className}`}>
       <div className="flex items-end justify-between gap-4 mb-8 sm:mb-10">
         <div>
-          <h2 className="font-display text-2xl sm:text-3xl font-bold text-[#0f1724] tracking-tight">{title}</h2>
-          {subtitle && <p className="text-sm text-[#5c6775] mt-2">{subtitle}</p>}
+          <h2 className="font-display text-2xl sm:text-3xl font-bold text-[#111] tracking-tight">{title}</h2>
+          {subtitle && <p className="text-sm text-[#6b6b6b] mt-2">{subtitle}</p>}
         </div>
         {viewAllLink && (
           <Link
             to={viewAllLink}
-            className="text-sm font-semibold text-[#0f1724] border-b border-[#0f1724] pb-0.5 hover:text-[#c41e3a] hover:border-[#c41e3a] transition shrink-0"
+            className="text-xs font-bold uppercase tracking-[0.16em] text-[#111] border-b-2 border-[#111] pb-0.5 hover:text-[#c8102e] hover:border-[#c8102e] transition shrink-0"
           >
             View All
           </Link>

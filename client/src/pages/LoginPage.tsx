@@ -27,26 +27,27 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-[60vh] flex items-center justify-center px-4 py-12 bg-[#faf9f7]">
-      <div className="w-full max-w-md bg-white rounded-2xl border border-[#e8e8e8] p-6 sm:p-8 shadow-sm">
-        <h1 className="text-xl font-bold text-[#1a1a1a] text-center mb-1">Welcome Back</h1>
-        <p className="text-sm text-gray-500 text-center mb-6">Login to your wholesale account</p>
+    <div className="min-h-[70vh] flex items-center justify-center px-4 py-12 bg-[#f6f4f0]">
+      <div className="w-full max-w-md bg-white border border-[#e8e8e8] p-6 sm:p-10">
+        <p className="text-[11px] uppercase tracking-[0.28em] text-[#c8102e] font-semibold text-center mb-2">Account</p>
+        <h1 className="font-display text-3xl sm:text-4xl font-bold text-center mb-2">Sign in</h1>
+        <p className="text-sm text-[#6b6b6b] text-center mb-8">Login to your wholesale account</p>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="text-sm font-medium block mb-1.5">Email</label>
-            <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="w-full h-11 border border-[#e8e8e8] rounded-lg px-4 text-sm focus:outline-none focus:border-[#1a1a1a]" />
+            <label className="text-xs font-bold uppercase tracking-[0.14em] block mb-2">Email</label>
+            <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="field" />
           </div>
           <div>
-            <label className="text-sm font-medium block mb-1.5">Password</label>
-            <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className="w-full h-11 border border-[#e8e8e8] rounded-lg px-4 text-sm focus:outline-none focus:border-[#1a1a1a]" />
+            <label className="text-xs font-bold uppercase tracking-[0.14em] block mb-2">Password</label>
+            <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className="field" />
           </div>
-          {error && <p className="text-sm text-[#e11d48]">{error}</p>}
-          <button type="submit" disabled={loading} className="w-full h-11 bg-[#1a1a1a] text-white rounded-full font-semibold hover:bg-[#333] transition disabled:opacity-50">
-            {loading ? 'Logging in...' : 'Login'}
+          {error && <p className="text-sm text-[#c8102e]">{error}</p>}
+          <button type="submit" disabled={loading} className="btn-primary w-full">
+            {loading ? 'Signing in…' : 'Sign in'}
           </button>
         </form>
-        <p className="text-sm text-center mt-5 text-gray-500">
-          Don't have an account? <Link to="/register" className="text-[#1a1a1a] font-semibold hover:underline">Sign Up</Link>
+        <p className="text-sm text-center mt-6 text-[#6b6b6b]">
+          New here? <Link to="/register" className="text-[#111] font-semibold underline underline-offset-2">Create account</Link>
         </p>
       </div>
     </div>
