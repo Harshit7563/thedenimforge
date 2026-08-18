@@ -15,9 +15,18 @@ import newsletterRoutes from './routes/newsletter.js';
 import adminRoutes from './routes/admin.js';
 import uploadRoutes from './routes/upload.js';
 import addressRoutes from './routes/addresses.js';
+import pool from './config/db.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, '../.env') });
+
+process.on('unhandledRejection', (reason) => {
+  console.error('Unhandled rejection:', reason);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught exception:', err);
+});
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -45,11 +54,26 @@ app.use(express.json({ limit: '2mb' }));
 
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
-app.get('/api/health', (_, res) => res.json({
-  status: 'ok',
-  name: 'The Denim Forge API',
-  site: process.env.SITE_URL || 'https://thedenimforge.com',
-}));
+app.get('/api/health', async (_req, res) => {
+  try {
+    await pool.query('SELECT 1');
+    res.json({
+      status: 'ok',
+      name: 'The Denim Forge API',
+      site: process.env.SITE_URL || 'https://thedenimforge.com',
+      db: 'connected',
+      uptime_sec: Math.floor(process.uptime()),
+    });
+  } catch (err) {
+    console.error('Health check DB error:', err.message);
+    res.status(503).json({
+      status: 'degraded',
+      name: 'The Denim Forge API',
+      db: 'disconnected',
+      error: 'Database unavailable',
+    });
+  }
+});
 
 app.use('/api/products', productRoutes);
 app.use('/api/categories', categoryRoutes);

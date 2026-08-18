@@ -15,6 +15,7 @@ client/.env
 
 # Logs & OS
 *.log
+logs/
 thedenimforge-full.zip
 npm-debug.log*
 .DS_Store

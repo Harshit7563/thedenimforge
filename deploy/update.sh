@@ -29,13 +29,7 @@ npm run db:migrate --prefix server
 echo "==> Building frontend..."
 npm run build
 
-echo "==> Restarting API..."
-if command -v pm2 &>/dev/null; then
-  pm2 restart thedenimforge-api || pm2 start deploy/ecosystem.config.cjs
-  pm2 save
-else
-  echo "    PM2 not found — start API manually"
-fi
+mkdir -p "$APP_DIR/logs"
 
 # Nginx serves /var/www/thedenimforge — sync dist if deploy dir differs
 NGINX_ROOT="/var/www/thedenimforge"
@@ -45,7 +39,21 @@ if [ -d "$NGINX_ROOT/client" ] && [ "$APP_DIR" != "$NGINX_ROOT" ]; then
   rsync -a --delete "$APP_DIR/client/dist/" "$NGINX_ROOT/client/dist/"
 fi
 
+echo "==> Restarting API..."
+if command -v pm2 &>/dev/null; then
+  pm2 delete thedenimforge-api 2>/dev/null || true
+  pm2 start "$APP_DIR/deploy/ecosystem.config.cjs" --update-env
+  pm2 save
+  sleep 2
+  curl -sS --max-time 8 http://127.0.0.1:4000/api/health >/dev/null || {
+    echo "WARNING: API health check failed — run: bash deploy/diagnose.sh"
+  }
+else
+  echo "    PM2 not found — start API manually"
+fi
+
 echo ""
 echo "==> Update complete!"
 echo "    Site: https://thedenimforge.com"
 echo "    Admin: https://thedenimforge.com/admin"
+echo "    If site drops again: bash deploy/ensure-running.sh"
