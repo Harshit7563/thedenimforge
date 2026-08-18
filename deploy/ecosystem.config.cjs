@@ -26,6 +26,7 @@ module.exports = {
     env: {
       NODE_ENV: 'production',
       PORT: 4000,
+      UPLOAD_DIR: '/var/www/thedenimforge/uploads',
     },
   }],
 };

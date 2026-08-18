@@ -2,12 +2,10 @@ import { Router } from 'express';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
-import { fileURLToPath } from 'url';
 import { adminMiddleware } from '../middleware/auth.js';
+import { uploadRoot } from '../config/uploads.js';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const uploadDir = path.join(__dirname, '../../uploads/products');
-
+const uploadDir = path.join(uploadRoot, 'products');
 fs.mkdirSync(uploadDir, { recursive: true });
 
 const storage = multer.diskStorage({

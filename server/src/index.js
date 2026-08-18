@@ -16,6 +16,7 @@ import adminRoutes from './routes/admin.js';
 import uploadRoutes from './routes/upload.js';
 import addressRoutes from './routes/addresses.js';
 import pool from './config/db.js';
+import { extraUploadRoots, uploadRoot } from './config/uploads.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, '../.env') });
@@ -52,7 +53,10 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '2mb' }));
 
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+app.use('/uploads', express.static(uploadRoot));
+for (const dir of extraUploadRoots) {
+  app.use('/uploads', express.static(dir));
+}
 
 app.get('/api/health', async (_req, res) => {
   try {
