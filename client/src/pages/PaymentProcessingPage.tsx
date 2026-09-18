@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Loader2, Smartphone, ArrowLeft, CheckCircle2, XCircle } from 'lucide-react';
+import { Loader2, Smartphone, ArrowLeft, CheckCircle2, XCircle, ShieldCheck } from 'lucide-react';
 import { api, formatPrice } from '../lib/api';
 import Breadcrumbs from '../components/Breadcrumbs';
 
@@ -30,6 +30,16 @@ function loadStored(): PayState | null {
   }
 }
 
+function friendlyStatus(code: string): string {
+  const s = (code || '').toUpperCase();
+  if (s === 'CHARGED') return 'Payment received';
+  if (s.includes('FAIL') || s.includes('DECLINED')) return 'Payment failed';
+  if (s === 'PENDING_VBV' || s === 'PENDING' || s === 'NEW' || s === 'AUTHORIZING') {
+    return 'Waiting for payment…';
+  }
+  return 'Confirming with bank…';
+}
+
 export default function PaymentProcessingPage() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -42,13 +52,12 @@ export default function PaymentProcessingPage() {
 
   const qrSrc = useMemo(() => {
     if (!data?.intentUrl) return '';
-    return `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(data.intentUrl)}`;
+    return `https://api.qrserver.com/v1/create-qr-code/?size=260x260&margin=12&data=${encodeURIComponent(data.intentUrl)}`;
   }, [data?.intentUrl]);
 
   const openUpi = useCallback(() => {
     if (!data?.intentUrl) return;
     setOpened(true);
-    // Mobile browsers open installed UPI apps from upi:// links
     window.location.href = data.intentUrl;
   }, [data?.intentUrl]);
 
@@ -57,10 +66,9 @@ export default function PaymentProcessingPage() {
       navigate('/checkout');
       return;
     }
-    // Auto-open UPI apps on phones
     const mobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
     if (mobile && !opened) {
-      const t = setTimeout(openUpi, 400);
+      const t = setTimeout(openUpi, 500);
       return () => clearTimeout(t);
     }
   }, [data, navigate, openUpi, opened]);
@@ -88,7 +96,7 @@ export default function PaymentProcessingPage() {
                 },
               },
             });
-          }, 800);
+          }, 900);
         } else if (s.payment_status === 'failed') {
           setPhase('failed');
         }
@@ -108,71 +116,143 @@ export default function PaymentProcessingPage() {
   if (!data) return null;
 
   return (
-    <div className="max-w-lg mx-auto px-4 py-10 sm:py-16">
-      <Breadcrumbs items={[{ label: 'Checkout', path: '/checkout' }, { label: 'UPI Payment' }]} />
+    <div className="min-h-[70vh] bg-[#f6f4f0]">
+      <div className="max-w-md mx-auto px-4 py-8 sm:py-12">
+        <Breadcrumbs items={[{ label: 'Checkout', path: '/checkout' }, { label: 'UPI Payment' }]} />
 
-      <div className="text-center mt-6">
-        {phase === 'waiting' && (
-          <div className="w-20 h-20 bg-[#faf9f7] border border-[#f0f0f0] rounded-full flex items-center justify-center mx-auto mb-6">
-            <Loader2 size={36} className="text-[#1a1a1a] animate-spin" />
-          </div>
-        )}
-        {phase === 'paid' && (
-          <div className="w-20 h-20 bg-green-50 border border-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <CheckCircle2 size={36} className="text-green-700" />
-          </div>
-        )}
-        {phase === 'failed' && (
-          <div className="w-20 h-20 bg-red-50 border border-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <XCircle size={36} className="text-red-600" />
-          </div>
-        )}
-
-        <h1 className="text-2xl font-bold text-[#1a1a1a] mb-2">
-          {phase === 'paid' ? 'Payment successful' : phase === 'failed' ? 'Payment failed' : 'Complete UPI payment'}
-        </h1>
-        <p className="text-sm text-gray-500 mb-2">
-          Order <strong>{data.orderNumber}</strong> · {formatPrice(data.total)}
-        </p>
-        {phase === 'waiting' && (
-          <p className="text-sm text-gray-500 mb-8 max-w-sm mx-auto leading-relaxed">
-            Open your UPI app and pay, or scan the QR on desktop. This page updates automatically when HDFC confirms payment.
-          </p>
-        )}
-
-        {phase === 'waiting' && (
-          <>
-            <div className="bg-white border border-[#f0f0f0] rounded-2xl p-5 mb-5 inline-block">
-              {qrSrc ? (
-                <img src={qrSrc} alt="UPI QR" width={240} height={240} className="mx-auto" />
-              ) : (
-                <Smartphone size={48} className="mx-auto text-gray-300" />
-              )}
-              <p className="text-xs text-gray-400 mt-3">Scan with any UPI app</p>
+        <div className="mt-5 bg-white border border-[#e8e8e8] overflow-hidden">
+          {/* HDFC brand strip */}
+          <div className="flex items-center gap-3 px-5 py-4 border-b border-[#f0f0f0] bg-white">
+            <img
+              src="/images/payments/hdfc-logo.svg"
+              alt="HDFC Bank"
+              className="w-11 h-11 rounded-lg border border-[#e8e8e8] object-contain bg-white"
+            />
+            <div className="min-w-0">
+              <p className="text-sm font-bold text-[#1a1a1a]">UPI by HDFC</p>
+              <p className="text-xs font-medium text-[#004c8f]">HDFC Bank SmartGateway</p>
             </div>
-
-            <button
-              type="button"
-              onClick={openUpi}
-              className="h-12 px-8 bg-[#111] text-white rounded-full font-semibold text-sm inline-flex items-center justify-center gap-2 w-full sm:w-auto"
-            >
-              <Smartphone size={18} /> Open UPI app
-            </button>
-
-            <p className="text-xs text-gray-400 mt-4">Status: {gatewayStatus}</p>
-          </>
-        )}
-
-        {phase === 'failed' && (
-          <div className="flex flex-col sm:flex-row gap-3 justify-center mt-6">
-            <Link to="/checkout" className="h-11 px-8 bg-[#1a1a1a] text-white rounded-full font-semibold text-sm flex items-center justify-center gap-2">
-              <ArrowLeft size={16} /> Try again / COD
-            </Link>
-            <Link to="/contact" className="h-11 px-8 border border-[#e8e8e8] text-[#1a1a1a] rounded-full font-semibold text-sm flex items-center justify-center">
-              Contact Us
-            </Link>
+            {phase === 'waiting' && (
+              <Loader2 size={18} className="ml-auto text-[#6b6b6b] animate-spin shrink-0" />
+            )}
+            {phase === 'paid' && (
+              <CheckCircle2 size={20} className="ml-auto text-green-600 shrink-0" />
+            )}
+            {phase === 'failed' && (
+              <XCircle size={20} className="ml-auto text-red-600 shrink-0" />
+            )}
           </div>
-        )}
+
+          <div className="px-5 pt-6 pb-7 text-center">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#6b6b6b] mb-2">
+              {phase === 'paid' ? 'Payment complete' : phase === 'failed' ? 'Payment failed' : 'Complete payment'}
+            </p>
+            <h1 className="font-display text-2xl sm:text-[1.75rem] font-bold text-[#111] tracking-tight">
+              {formatPrice(data.total)}
+            </h1>
+            <p className="text-sm text-[#6b6b6b] mt-1.5">
+              Order <span className="font-semibold text-[#111]">{data.orderNumber}</span>
+            </p>
+
+            {phase === 'waiting' && (
+              <>
+                <p className="text-sm text-[#5c6775] mt-4 max-w-xs mx-auto leading-relaxed">
+                  Scan the QR with any UPI app, or tap below to open GPay / PhonePe / Paytm.
+                </p>
+
+                <div className="mt-6 mx-auto w-fit border border-[#e8e8e8] bg-[#faf9f7] p-4">
+                  {qrSrc ? (
+                    <img
+                      src={qrSrc}
+                      alt="UPI payment QR"
+                      width={260}
+                      height={260}
+                      className="block mx-auto bg-white"
+                    />
+                  ) : (
+                    <div className="w-[260px] h-[260px] flex items-center justify-center">
+                      <Smartphone size={40} className="text-gray-300" />
+                    </div>
+                  )}
+                </div>
+                <p className="text-[11px] text-[#8a8a8a] mt-2.5">Scan with any UPI app</p>
+
+                <button
+                  type="button"
+                  onClick={openUpi}
+                  className="mt-5 w-full h-12 bg-[#111] text-white text-xs font-bold uppercase tracking-[0.14em] inline-flex items-center justify-center gap-2 hover:bg-[#333] transition"
+                >
+                  <Smartphone size={16} /> Open UPI app
+                </button>
+
+                <div className="mt-5 flex items-center justify-center gap-2 text-sm text-[#111]">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#c8102e] opacity-60" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-[#c8102e]" />
+                  </span>
+                  <span className="font-medium">{friendlyStatus(gatewayStatus)}</span>
+                </div>
+                <p className="text-[11px] text-[#8a8a8a] mt-1.5">
+                  Page updates automatically after you pay
+                </p>
+
+                <ol className="mt-6 text-left space-y-2 border-t border-[#f0f0f0] pt-5">
+                  {[
+                    'Open UPI app or scan QR',
+                    'Confirm ₹ amount and pay',
+                    'Wait here — we detect payment',
+                  ].map((step, i) => (
+                    <li key={step} className="flex items-start gap-3 text-xs text-[#5c6775]">
+                      <span className="w-5 h-5 rounded-full bg-[#111] text-white text-[10px] font-bold flex items-center justify-center shrink-0">
+                        {i + 1}
+                      </span>
+                      {step}
+                    </li>
+                  ))}
+                </ol>
+              </>
+            )}
+
+            {phase === 'paid' && (
+              <div className="mt-6">
+                <div className="w-16 h-16 mx-auto rounded-full bg-green-50 flex items-center justify-center mb-3">
+                  <CheckCircle2 size={32} className="text-green-600" />
+                </div>
+                <p className="text-sm text-[#5c6775]">Redirecting to order confirmation…</p>
+              </div>
+            )}
+
+            {phase === 'failed' && (
+              <div className="mt-6 space-y-4">
+                <div className="w-16 h-16 mx-auto rounded-full bg-red-50 flex items-center justify-center">
+                  <XCircle size={32} className="text-red-600" />
+                </div>
+                <p className="text-sm text-[#5c6775]">
+                  Payment nahi hua. Dubara try karo ya COD choose karo.
+                </p>
+                <div className="flex flex-col gap-2">
+                  <Link
+                    to="/checkout"
+                    className="h-11 w-full bg-[#111] text-white text-xs font-bold uppercase tracking-[0.14em] flex items-center justify-center gap-2"
+                  >
+                    <ArrowLeft size={14} /> Back to checkout
+                  </Link>
+                  <Link
+                    to="/contact"
+                    className="h-11 w-full border border-[#e8e8e8] text-[#111] text-xs font-bold uppercase tracking-[0.14em] flex items-center justify-center"
+                  >
+                    Contact us
+                  </Link>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="px-5 py-3 border-t border-[#f0f0f0] bg-[#faf9f7] flex items-center justify-center gap-1.5 text-[10px] text-[#6b6b6b]">
+            <ShieldCheck size={12} className="text-[#004c8f]" />
+            Secured by HDFC Bank SmartGateway
+          </div>
+        </div>
       </div>
     </div>
   );
