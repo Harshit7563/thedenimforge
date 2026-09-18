@@ -16,6 +16,7 @@ import adminRoutes from './routes/admin.js';
 import uploadRoutes from './routes/upload.js';
 import addressRoutes from './routes/addresses.js';
 import paymentRoutes from './routes/payments.js';
+import pincodeRoutes from './routes/pincode.js';
 import pool from './config/db.js';
 import { extraUploadRoots, uploadRoot } from './config/uploads.js';
 
@@ -101,6 +102,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/pincode', pincodeRoutes);
 app.use('/api/inquiries', inquiryRoutes);
 app.use('/api/newsletter', newsletterRoutes);
 app.use('/api/admin', adminRoutes);

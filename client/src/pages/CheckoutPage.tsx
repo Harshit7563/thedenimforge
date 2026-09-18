@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ShieldCheck, Truck, Banknote } from 'lucide-react';
+import { ArrowLeft, ShieldCheck, Truck, Banknote, Loader2 } from 'lucide-react';
 import { api, formatPrice, type CartItem } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
@@ -15,6 +15,22 @@ const INDIAN_STATES = [
   'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana', 'Tripura', 'Uttar Pradesh',
   'Uttarakhand', 'West Bengal', 'Delhi', 'Jammu and Kashmir', 'Ladakh',
 ];
+
+function matchState(apiState: string) {
+  const raw = (apiState || '').trim();
+  if (!raw) return '';
+  const found = INDIAN_STATES.find((s) => s.toLowerCase() === raw.toLowerCase());
+  if (found) return found;
+  // common aliases
+  const aliases: Record<string, string> = {
+    'nct of delhi': 'Delhi',
+    'delhi': 'Delhi',
+    'orissa': 'Odisha',
+    'pondicherry': 'Tamil Nadu',
+    'jammu & kashmir': 'Jammu and Kashmir',
+  };
+  return aliases[raw.toLowerCase()] || raw;
+}
 
 interface ShippingForm {
   name: string;
@@ -44,6 +60,8 @@ export default function CheckoutPage() {
   const [placing, setPlacing] = useState(false);
   const [error, setError] = useState('');
   const [upiEnabled, setUpiEnabled] = useState(false);
+  const [pinStatus, setPinStatus] = useState<'idle' | 'loading' | 'ok' | 'error'>('idle');
+  const [pinHint, setPinHint] = useState('');
   const [form, setForm] = useState<ShippingForm>({
     name: '', company: '', phone: '', email: '',
     address_line1: '', address_line2: '', city: '', state: 'Maharashtra',
@@ -70,6 +88,48 @@ export default function CheckoutPage() {
       .catch(() => navigate('/cart'))
       .finally(() => setLoading(false));
   }, [user, navigate]);
+
+  useEffect(() => {
+    const pin = form.pincode;
+    if (!/^\d{6}$/.test(pin)) {
+      setPinStatus('idle');
+      setPinHint('');
+      return;
+    }
+
+    let cancelled = false;
+    setPinStatus('loading');
+    setPinHint('Fetching city & state…');
+
+    const t = setTimeout(() => {
+      api.lookupPincode(pin)
+        .then((data) => {
+          if (cancelled) return;
+          const state = matchState(data.state);
+          setForm((f) => ({
+            ...f,
+            city: data.city || f.city,
+            state: state || f.state,
+          }));
+          setPinStatus('ok');
+          setPinHint(
+            data.area
+              ? `${data.city}, ${data.state}${data.area ? ` · ${data.area}` : ''}`
+              : `${data.city}, ${data.state}`
+          );
+        })
+        .catch(() => {
+          if (cancelled) return;
+          setPinStatus('error');
+          setPinHint('Pincode not found — city/state manually bharo');
+        });
+    }, 250);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+    };
+  }, [form.pincode]);
 
   const set = (key: keyof ShippingForm, value: string) => setForm((f) => ({ ...f, [key]: value }));
 
@@ -183,6 +243,28 @@ export default function CheckoutPage() {
               <h2 className="font-semibold mb-4 flex items-center gap-2"><Truck size={18} /> Shipping Address</h2>
               <div className="grid sm:grid-cols-2 gap-3">
                 <div className="sm:col-span-2">
+                  <label className="text-xs font-medium text-gray-600 mb-1 block">Pincode *</label>
+                  <div className="relative">
+                    <input
+                      required
+                      inputMode="numeric"
+                      autoComplete="postal-code"
+                      value={form.pincode}
+                      onChange={(e) => set('pincode', e.target.value.replace(/\D/g, '').slice(0, 6))}
+                      placeholder="6-digit pincode"
+                      className="w-full h-11 border border-[#e8e8e8] rounded-lg px-4 pr-10 text-sm focus:outline-none focus:border-[#1a1a1a]"
+                    />
+                    {pinStatus === 'loading' && (
+                      <Loader2 size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 animate-spin" />
+                    )}
+                  </div>
+                  {pinHint && (
+                    <p className={`text-[11px] mt-1.5 ${pinStatus === 'error' ? 'text-red-500' : 'text-green-700'}`}>
+                      {pinHint}
+                    </p>
+                  )}
+                </div>
+                <div className="sm:col-span-2">
                   <label className="text-xs font-medium text-gray-600 mb-1 block">Address Line 1 *</label>
                   <input required value={form.address_line1} onChange={(e) => set('address_line1', e.target.value)} placeholder="Shop/Building, Street" className="w-full h-11 border border-[#e8e8e8] rounded-lg px-4 text-sm focus:outline-none focus:border-[#1a1a1a]" />
                 </div>
@@ -195,10 +277,6 @@ export default function CheckoutPage() {
                   <input required value={form.city} onChange={(e) => set('city', e.target.value)} className="w-full h-11 border border-[#e8e8e8] rounded-lg px-4 text-sm focus:outline-none focus:border-[#1a1a1a]" />
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-gray-600 mb-1 block">Pincode *</label>
-                  <input required value={form.pincode} onChange={(e) => set('pincode', e.target.value.replace(/\D/g, '').slice(0, 6))} className="w-full h-11 border border-[#e8e8e8] rounded-lg px-4 text-sm focus:outline-none focus:border-[#1a1a1a]" />
-                </div>
-                <div className="sm:col-span-2">
                   <label className="text-xs font-medium text-gray-600 mb-1 block">State *</label>
                   <select required value={form.state} onChange={(e) => set('state', e.target.value)} className="w-full h-11 border border-[#e8e8e8] rounded-lg px-4 text-sm focus:outline-none focus:border-[#1a1a1a] bg-white">
                     {INDIAN_STATES.map((s) => <option key={s} value={s}>{s}</option>)}

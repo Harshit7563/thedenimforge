@@ -35,6 +35,13 @@ const emptyAddress = {
   city: '', state: 'Maharashtra', pincode: '', is_default: false,
 };
 
+function matchState(apiState: string) {
+  const raw = (apiState || '').trim();
+  if (!raw) return '';
+  const found = INDIAN_STATES.find((s) => s.toLowerCase() === raw.toLowerCase());
+  return found || raw;
+}
+
 export default function AccountPage() {
   const { user, logout, loading: authLoading, refreshUser } = useAuth();
   const navigate = useNavigate();
@@ -84,6 +91,28 @@ export default function AccountPage() {
     api.getOrders().then(setOrders).catch(() => setOrders([]));
     api.getAddresses().then(setAddresses).catch(() => setAddresses([]));
   }, [user, authLoading, navigate]);
+
+  useEffect(() => {
+    const pin = String(addrForm.pincode || '').replace(/\D/g, '');
+    if (!showAddrForm || !/^\d{6}$/.test(pin)) return;
+    let cancelled = false;
+    const t = setTimeout(() => {
+      api.lookupPincode(pin)
+        .then((data) => {
+          if (cancelled) return;
+          setAddrForm((f) => ({
+            ...f,
+            city: data.city || f.city,
+            state: matchState(data.state) || f.state,
+          }));
+        })
+        .catch(() => {});
+    }, 250);
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+    };
+  }, [addrForm.pincode, showAddrForm]);
 
   const openOrder = async (id: string) => {
     try {
@@ -418,8 +447,14 @@ export default function AccountPage() {
                         <span className="block mb-1 text-[#5c6775]">{label}</span>
                         <input
                           required={label.includes('*')}
+                          inputMode={key === 'pincode' ? 'numeric' : undefined}
                           value={(addrForm as Record<string, string | boolean>)[key] as string}
-                          onChange={(e) => setAddrForm({ ...addrForm, [key]: e.target.value })}
+                          onChange={(e) => {
+                            const val = key === 'pincode'
+                              ? e.target.value.replace(/\D/g, '').slice(0, 6)
+                              : e.target.value;
+                            setAddrForm({ ...addrForm, [key]: val });
+                          }}
                           className="w-full h-10 border border-[#e4e7ec] px-3 text-sm focus:outline-none focus:border-[#0f1724]"
                         />
                       </label>

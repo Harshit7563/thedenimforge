@@ -131,6 +131,15 @@ export const api = {
       error?: string;
     }>(`/payments/status/${orderId}`),
   getPaymentConfig: () => request<{ enabled: boolean; methods: string[] }>('/payments/config'),
+  lookupPincode: (pincode: string) =>
+    request<{
+      pincode: string;
+      city: string;
+      state: string;
+      district: string;
+      area?: string;
+      post_offices?: Array<{ name: string; branch_type: string; delivery: string }>;
+    }>(`/pincode/${pincode}`),
   submitInquiry: (data: Record<string, unknown>) =>
     request('/inquiries', { method: 'POST', body: JSON.stringify(data) }),
   subscribeNewsletter: (email: string) =>
