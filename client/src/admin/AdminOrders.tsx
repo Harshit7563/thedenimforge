@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { adminApi } from '../lib/adminApi';
 
-const STATUSES = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
+const STATUSES = ['awaiting_payment', 'pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
 
 export default function AdminOrders() {
   const [orders, setOrders] = useState<Record<string, unknown>[]>([]);
@@ -25,6 +25,11 @@ export default function AdminOrders() {
               <div>
                 <p className="font-semibold">{o.order_number as string}</p>
                 <p className="text-xs text-gray-500">{o.first_name as string} {o.last_name as string} · {o.email as string}</p>
+                <p className="text-xs text-gray-400 mt-1">
+                  {(o.payment_method as string) === 'upi' ? 'UPI' : 'COD'}
+                  {o.payment_status ? ` · ${String(o.payment_status)}` : ''}
+                  {o.payment_gateway_status ? ` · GW: ${String(o.payment_gateway_status)}` : ''}
+                </p>
               </div>
               <p className="text-lg font-bold">₹{Number(o.total_amount).toLocaleString('en-IN')}</p>
             </div>

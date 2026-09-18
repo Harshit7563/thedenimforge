@@ -35,7 +35,18 @@ async function migrate() {
     END
   `);
 
-  console.log('Migration complete: is_admin + shipping_addresses + size_stock + moq=1 + banner images.');
+  await pool.query(`
+    ALTER TABLE orders
+      ADD COLUMN IF NOT EXISTS payment_method VARCHAR(30) DEFAULT 'cod',
+      ADD COLUMN IF NOT EXISTS payment_status VARCHAR(30) DEFAULT 'cod',
+      ADD COLUMN IF NOT EXISTS payment_txn_id VARCHAR(100),
+      ADD COLUMN IF NOT EXISTS payment_gateway_status VARCHAR(50),
+      ADD COLUMN IF NOT EXISTS payment_customer_id VARCHAR(64),
+      ADD COLUMN IF NOT EXISTS payment_meta JSONB DEFAULT '{}',
+      ADD COLUMN IF NOT EXISTS paid_at TIMESTAMP
+  `);
+
+  console.log('Migration complete: is_admin + shipping_addresses + size_stock + moq=1 + banner images + payments.');
   await pool.end();
 }
 

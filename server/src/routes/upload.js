@@ -19,7 +19,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({
   storage,
-  limits: { fileSize: 5 * 1024 * 1024, files: 4 },
+  limits: { fileSize: 12 * 1024 * 1024, files: 4 },
   fileFilter: (_req, file, cb) => {
     const ok = /\.(jpe?g|png|webp|gif)$/i.test(file.originalname) || /^image\//.test(file.mimetype);
     if (ok) cb(null, true);
@@ -29,7 +29,18 @@ const upload = multer({
 
 const router = Router();
 
-router.post('/products', adminMiddleware, upload.array('images', 4), (req, res) => {
+router.post('/products', adminMiddleware, (req, res, next) => {
+  upload.array('images', 4)(req, res, (err) => {
+    if (!err) return next();
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(413).json({ error: 'Photo 12 MB se badi hai. Compress karke upload karo.' });
+    }
+    if (err.code === 'LIMIT_FILE_COUNT') {
+      return res.status(400).json({ error: 'Maximum 4 photos allowed' });
+    }
+    return res.status(400).json({ error: err.message || 'Upload failed' });
+  });
+}, (req, res) => {
   try {
     const files = req.files || [];
     if (!files.length) return res.status(400).json({ error: 'No images uploaded' });

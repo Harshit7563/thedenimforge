@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ShieldCheck, Truck, Banknote } from 'lucide-react';
+import { ArrowLeft, ShieldCheck, Truck, Banknote, Smartphone } from 'lucide-react';
 import { api, formatPrice, type CartItem } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
@@ -26,7 +26,7 @@ interface ShippingForm {
   city: string;
   state: string;
   pincode: string;
-  payment_method: string;
+  payment_method: 'cod' | 'upi';
   notes: string;
 }
 
@@ -43,6 +43,7 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(true);
   const [placing, setPlacing] = useState(false);
   const [error, setError] = useState('');
+  const [upiEnabled, setUpiEnabled] = useState(false);
   const [form, setForm] = useState<ShippingForm>({
     name: '', company: '', phone: '', email: '',
     address_line1: '', address_line2: '', city: '', state: 'Maharashtra',
@@ -51,16 +52,19 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     if (!user) { navigate('/login', { state: { from: '/checkout' } }); return; }
-    Promise.all([api.getCart(), api.getMe()])
-      .then(([cart, me]) => {
+    Promise.all([api.getCart(), api.getMe(), api.getPaymentConfig().catch(() => ({ enabled: false, methods: ['cod'] }))])
+      .then(([cart, me, payCfg]) => {
         if (!cart.length) { navigate('/cart'); return; }
         setItems(cart);
+        const canUpi = Boolean(payCfg.enabled && payCfg.methods?.includes('upi'));
+        setUpiEnabled(canUpi);
         setForm((f) => ({
           ...f,
           name: [me.first_name, me.last_name].filter(Boolean).join(' ') || f.name,
           company: me.company_name || f.company,
           phone: me.phone || f.phone,
           email: me.email || f.email,
+          payment_method: canUpi ? 'upi' : 'cod',
         }));
       })
       .catch(() => navigate('/cart'))
@@ -87,11 +91,37 @@ export default function CheckoutPage() {
     }
     setPlacing(true);
     try {
+      const method = form.payment_method === 'upi' && upiEnabled ? 'upi' : 'cod';
       const order = await api.placeOrder({
-        shipping_address: { ...form, payment_method: 'cod' },
-        notes: form.notes || 'Payment: Cash on Delivery (COD)',
+        shipping_address: { ...form, payment_method: method },
+        payment_method: method,
+        notes: form.notes || (method === 'upi' ? 'Payment: UPI' : 'Payment: Cash on Delivery (COD)'),
       });
       refresh();
+
+      if (method === 'upi' && order.upi_intent_url) {
+        sessionStorage.setItem(
+          'df_pending_payment',
+          JSON.stringify({
+            orderId: order.id,
+            orderNumber: order.order_number,
+            intentUrl: order.upi_intent_url,
+            total,
+            amount: order.amount || String(total),
+          })
+        );
+        navigate('/payment-processing', {
+          state: {
+            orderId: order.id,
+            orderNumber: order.order_number,
+            intentUrl: order.upi_intent_url,
+            total,
+            payment_method: 'upi',
+          },
+        });
+        return;
+      }
+
       navigate('/order-success', { state: { order } });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Order failed. Please try again.');
@@ -99,7 +129,9 @@ export default function CheckoutPage() {
     }
   };
 
-  const submitLabel = placing ? 'Placing Order...' : 'Place Order (COD)';
+  const submitLabel = placing
+    ? (form.payment_method === 'upi' ? 'Starting UPI...' : 'Placing Order...')
+    : (form.payment_method === 'upi' ? 'Pay with UPI' : 'Place Order (COD)');
 
   if (loading) {
     return <div className="max-w-5xl mx-auto px-4 py-20 text-center text-gray-400 animate-pulse">Loading checkout...</div>;
@@ -125,7 +157,6 @@ export default function CheckoutPage() {
 
         <form id="checkout-form" onSubmit={handlePlaceOrder} className="grid lg:grid-cols-3 gap-6 lg:gap-8">
           <div className="lg:col-span-2 space-y-5">
-            {/* Contact */}
             <section className="bg-white border border-[#f0f0f0] rounded-2xl p-5">
               <h2 className="font-semibold mb-4">Contact Information</h2>
               <div className="grid sm:grid-cols-2 gap-3">
@@ -148,7 +179,6 @@ export default function CheckoutPage() {
               </div>
             </section>
 
-            {/* Shipping */}
             <section className="bg-white border border-[#f0f0f0] rounded-2xl p-5">
               <h2 className="font-semibold mb-4 flex items-center gap-2"><Truck size={18} /> Shipping Address</h2>
               <div className="grid sm:grid-cols-2 gap-3">
@@ -177,34 +207,65 @@ export default function CheckoutPage() {
               </div>
             </section>
 
-            {/* Payment — COD only */}
             <section className="bg-white border border-[#f0f0f0] rounded-2xl p-5">
               <h2 className="font-semibold mb-4">Payment Method</h2>
-              <div className="flex items-start gap-3 p-4 border border-[#1a1a1a] bg-[#faf9f7] rounded-xl">
-                <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-[#0f1724] text-white">
-                  <Banknote size={18} />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-semibold text-[#1a1a1a]">Cash on Delivery (COD)</p>
-                  <p className="text-xs text-gray-500 mt-0.5">
-                    Pay cash when your order arrives. No online payment required.
-                  </p>
-                  <p className="text-xs text-green-700 font-medium mt-2">Selected</p>
-                </div>
+              <div className="space-y-3">
+                {upiEnabled && (
+                  <button
+                    type="button"
+                    onClick={() => set('payment_method', 'upi')}
+                    className={`w-full flex items-start gap-3 p-4 border rounded-xl text-left transition ${
+                      form.payment_method === 'upi' ? 'border-[#1a1a1a] bg-[#faf9f7]' : 'border-[#e8e8e8]'
+                    }`}
+                  >
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
+                      form.payment_method === 'upi' ? 'bg-[#0f1724] text-white' : 'bg-[#f0f0f0] text-[#1a1a1a]'
+                    }`}>
+                      <Smartphone size={18} />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-semibold text-[#1a1a1a]">UPI (GPay / PhonePe / Paytm)</p>
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        Pay instantly via UPI Intent / QR — powered by HDFC SmartGateway.
+                      </p>
+                      {form.payment_method === 'upi' && (
+                        <p className="text-xs text-green-700 font-medium mt-2">Selected</p>
+                      )}
+                    </div>
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => set('payment_method', 'cod')}
+                  className={`w-full flex items-start gap-3 p-4 border rounded-xl text-left transition ${
+                    form.payment_method === 'cod' ? 'border-[#1a1a1a] bg-[#faf9f7]' : 'border-[#e8e8e8]'
+                  }`}
+                >
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
+                    form.payment_method === 'cod' ? 'bg-[#0f1724] text-white' : 'bg-[#f0f0f0] text-[#1a1a1a]'
+                  }`}>
+                    <Banknote size={18} />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-[#1a1a1a]">Cash on Delivery (COD)</p>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      Pay cash when your order arrives.
+                    </p>
+                    {form.payment_method === 'cod' && (
+                      <p className="text-xs text-green-700 font-medium mt-2">Selected</p>
+                    )}
+                  </div>
+                </button>
               </div>
-              <p className="text-xs text-gray-400 mt-3">
-                Currently we accept Cash on Delivery only.
-              </p>
             </section>
 
-            {/* Notes */}
             <section className="bg-white border border-[#f0f0f0] rounded-2xl p-5">
               <label className="text-sm font-semibold mb-2 block">Order Notes (optional)</label>
               <textarea value={form.notes} onChange={(e) => set('notes', e.target.value)} rows={3} placeholder="Special instructions, GST number, delivery preferences..." className="w-full border border-[#e8e8e8] rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-[#1a1a1a] resize-none" />
             </section>
           </div>
 
-          {/* Summary */}
           <div className="lg:col-span-1">
             <div className="bg-[#faf9f7] border border-[#f0f0f0] rounded-2xl p-5 sticky top-28">
               <h2 className="font-semibold mb-4">Your Order ({items.length} items)</h2>
@@ -232,11 +293,7 @@ export default function CheckoutPage() {
 
               {error && <p className="text-sm text-red-500 mt-3">{error}</p>}
 
-              <button
-                type="submit"
-                disabled={placing}
-                className="btn-primary w-full mt-5 hidden md:flex"
-              >
+              <button type="submit" disabled={placing} className="btn-primary w-full mt-5 hidden md:flex">
                 {submitLabel}
               </button>
               <p className="text-[10px] text-gray-400 text-center mt-3 hidden md:flex items-center justify-center gap-1">
@@ -247,7 +304,6 @@ export default function CheckoutPage() {
         </form>
       </div>
 
-      {/* Mobile sticky */}
       <div className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-white border-t border-[#e8e8e8] px-4 py-3 safe-bottom shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
         <div className="flex items-center justify-between gap-4">
           <div>

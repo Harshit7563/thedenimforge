@@ -1,4 +1,5 @@
-const API = import.meta.env.VITE_API_URL || '/api';
+import { API_BASE, networkError } from './apiBase';
+import { compressImages } from './compressImage';
 
 function adminToken() {
   return localStorage.getItem('admin_token');
@@ -16,7 +17,12 @@ async function adminRequest<T>(path: string, options: RequestInit = {}): Promise
   const token = adminToken();
   if (token) headers.Authorization = `Bearer ${token}`;
 
-  const res = await fetch(`${API}/admin${path}`, { ...options, headers });
+  let res: Response;
+  try {
+    res = await fetch(`${API_BASE}/admin${path}`, { ...options, headers });
+  } catch (err) {
+    throw networkError(err);
+  }
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: 'Request failed' }));
     if (res.status === 401) {
@@ -44,19 +50,28 @@ export const adminApi = {
     adminRequest(`/products/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   deleteProduct: (id: string) => adminRequest(`/products/${id}`, { method: 'DELETE' }),
   uploadImages: async (files: File[]) => {
+    const compressed = await compressImages(files);
     const form = new FormData();
-    files.forEach((f) => form.append('images', f));
+    compressed.forEach((f) => form.append('images', f));
     const token = adminToken();
-    const res = await fetch(`${API}/admin/upload/products`, {
-      method: 'POST',
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-      body: form,
-    });
+    let res: Response;
+    try {
+      res = await fetch(`${API_BASE}/admin/upload/products`, {
+        method: 'POST',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: form,
+      });
+    } catch (err) {
+      throw networkError(err);
+    }
     if (!res.ok) {
       const err = await res.json().catch(() => ({ error: 'Upload failed' }));
       if (res.status === 401) {
         clearAdminSession();
         throw new Error('Session expired — please login again at /admin/login');
+      }
+      if (res.status === 413) {
+        throw new Error('Photos bahut badi hain. Chhoti images (8 MB se kam) upload karo.');
       }
       throw new Error(err.error || 'Upload failed');
     }

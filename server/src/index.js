@@ -15,6 +15,7 @@ import newsletterRoutes from './routes/newsletter.js';
 import adminRoutes from './routes/admin.js';
 import uploadRoutes from './routes/upload.js';
 import addressRoutes from './routes/addresses.js';
+import paymentRoutes from './routes/payments.js';
 import pool from './config/db.js';
 import { extraUploadRoots, uploadRoot } from './config/uploads.js';
 
@@ -35,6 +36,8 @@ const PORT = process.env.PORT || 4000;
 const allowedOrigins = [
   'http://localhost:5175',
   'http://127.0.0.1:5175',
+  'http://localhost:5177',
+  'http://127.0.0.1:5177',
   'http://localhost:3000',
   'http://127.0.0.1:3000',
   'http://localhost:5173',
@@ -44,14 +47,25 @@ const allowedOrigins = [
   process.env.CLIENT_URL,
 ].filter(Boolean);
 
+function isAllowedOrigin(origin) {
+  if (!origin) return true;
+  if (allowedOrigins.includes(origin)) return true;
+  try {
+    const host = new URL(origin).hostname;
+    return host === 'thedenimforge.com' || host.endsWith('.thedenimforge.com');
+  } catch {
+    return false;
+  }
+}
+
 app.use(cors({
   origin: (origin, cb) => {
-    if (!origin || allowedOrigins.includes(origin)) cb(null, true);
-    else cb(null, false);
+    cb(null, isAllowedOrigin(origin));
   },
   credentials: true,
 }));
 app.use(express.json({ limit: '2mb' }));
+app.use(express.urlencoded({ extended: true }));
 
 app.use('/uploads', express.static(uploadRoot));
 for (const dir of extraUploadRoots) {
@@ -86,6 +100,7 @@ app.use('/api/banners', bannerRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/payments', paymentRoutes);
 app.use('/api/inquiries', inquiryRoutes);
 app.use('/api/newsletter', newsletterRoutes);
 app.use('/api/admin', adminRoutes);
@@ -94,6 +109,9 @@ app.use('/api/addresses', addressRoutes);
 
 app.use((err, _req, res, _next) => {
   console.error(err);
+  if (err && err.code === 'LIMIT_FILE_SIZE') {
+    return res.status(413).json({ error: 'Photo 12 MB se badi hai. Compress karke upload karo.' });
+  }
   res.status(500).json({ error: 'Internal server error' });
 });
 

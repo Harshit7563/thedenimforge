@@ -98,6 +98,13 @@ CREATE TABLE IF NOT EXISTS orders (
   is_wholesale BOOLEAN DEFAULT false,
   shipping_address JSONB,
   notes TEXT,
+  payment_method VARCHAR(30) DEFAULT 'cod',
+  payment_status VARCHAR(30) DEFAULT 'cod',
+  payment_txn_id VARCHAR(100),
+  payment_gateway_status VARCHAR(50),
+  payment_customer_id VARCHAR(64),
+  payment_meta JSONB DEFAULT '{}',
+  paid_at TIMESTAMP,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

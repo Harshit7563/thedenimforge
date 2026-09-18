@@ -1,11 +1,13 @@
 import { Router } from 'express';
 import pool from '../config/db.js';
 import { authMiddleware } from '../middleware/auth.js';
+import { createUpiIntentPayment, hdfcConfigured } from '../services/hdfc.js';
 
 const router = Router();
 
 function generateOrderNumber() {
-  return 'DF' + Date.now().toString(36).toUpperCase();
+  // HDFC: < 21 chars, alphanumeric only, non-sequential-looking
+  return ('DF' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5)).toUpperCase().slice(0, 20);
 }
 
 router.get('/', authMiddleware, async (req, res) => {
@@ -23,7 +25,9 @@ router.get('/', authMiddleware, async (req, res) => {
 router.get('/track/:orderNumber', async (req, res) => {
   try {
     const orderRes = await pool.query(
-      'SELECT id, order_number, status, total_amount, shipping_address, notes, created_at, user_id FROM orders WHERE order_number = $1',
+      `SELECT id, order_number, status, total_amount, shipping_address, notes, created_at, user_id,
+              payment_method, payment_status, payment_gateway_status
+       FROM orders WHERE order_number = $1`,
       [req.params.orderNumber.toUpperCase()]
     );
     const order = orderRes.rows[0];
@@ -41,6 +45,8 @@ router.get('/track/:orderNumber', async (req, res) => {
       shipping_address: order.shipping_address,
       notes: order.notes,
       created_at: order.created_at,
+      payment_method: order.payment_method,
+      payment_status: order.payment_status,
       items: items.rows,
     });
   } catch (err) {
@@ -83,13 +89,19 @@ router.post('/', authMiddleware, async (req, res) => {
 
     const addr = req.body.shipping_address;
     if (!addr?.name || !addr?.phone || !addr?.address_line1 || !addr?.city || !addr?.state || !addr?.pincode) {
+      await client.query('ROLLBACK');
       return res.status(400).json({ error: 'Complete shipping address is required' });
     }
 
-    const userRes = await client.query('SELECT is_wholesale FROM users WHERE id = $1', [req.user.id]);
-    // B2B storefront always uses wholesale pricing
+    const requestedMethod = String(addr.payment_method || req.body.payment_method || 'cod').toLowerCase();
+    const paymentMethod = requestedMethod === 'upi' ? 'upi' : 'cod';
+
+    if (paymentMethod === 'upi' && !hdfcConfigured()) {
+      await client.query('ROLLBACK');
+      return res.status(503).json({ error: 'UPI payment is temporarily unavailable. Please use COD.' });
+    }
+
     const isWholesale = true;
-    void userRes;
     let subtotal = 0;
     for (const item of cartItems.rows) {
       subtotal += parseFloat(item.wholesale_price) * item.quantity;
@@ -99,18 +111,37 @@ router.post('/', authMiddleware, async (req, res) => {
     const shipping = subtotal >= FREE_SHIPPING_AT ? 0 : SHIPPING_FEE;
     const total = subtotal + shipping;
 
-    const paymentMethod = 'cod';
+    const orderNumber = generateOrderNumber();
+    const orderStatus = paymentMethod === 'upi' ? 'awaiting_payment' : 'pending';
+    const paymentStatus = paymentMethod === 'upi' ? 'pending' : 'cod';
+    const notes =
+      req.body.notes ||
+      (paymentMethod === 'upi' ? 'Payment: UPI (HDFC SmartGateway)' : 'Payment: Cash on Delivery (COD)');
+
+    const userRow = await client.query(
+      'SELECT email, phone, first_name, last_name FROM users WHERE id = $1',
+      [req.user.id]
+    );
+    const user = userRow.rows[0] || {};
+    const paymentCustomerId = `u${String(req.user.id).replace(/-/g, '').slice(0, 28)}`;
 
     const orderRes = await client.query(
-      `INSERT INTO orders (user_id, order_number, total_amount, is_wholesale, shipping_address, notes)
-       VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`,
+      `INSERT INTO orders (
+         user_id, order_number, total_amount, is_wholesale, shipping_address, notes,
+         status, payment_method, payment_status, payment_customer_id
+       )
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *`,
       [
         req.user.id,
-        generateOrderNumber(),
+        orderNumber,
         total,
         isWholesale,
         JSON.stringify({ ...addr, payment_method: paymentMethod, shipping_fee: shipping, subtotal }),
-        req.body.notes || 'Payment: Cash on Delivery (COD)',
+        notes,
+        orderStatus,
+        paymentMethod,
+        paymentStatus,
+        paymentCustomerId,
       ]
     );
     const order = orderRes.rows[0];
@@ -125,7 +156,69 @@ router.post('/', authMiddleware, async (req, res) => {
     }
     await client.query('DELETE FROM cart_items WHERE user_id = $1', [req.user.id]);
     await client.query('COMMIT');
-    res.status(201).json(order);
+
+    if (paymentMethod === 'cod') {
+      return res.status(201).json(order);
+    }
+
+    // UPI Intent — create HDFC order + txn after local order is committed
+    try {
+      const site = process.env.SITE_URL || process.env.CLIENT_URL || 'https://thedenimforge.com';
+      const returnUrl = `${site.replace(/\/$/, '')}/api/payments/return`;
+
+      const upi = await createUpiIntentPayment({
+        orderId: order.order_number,
+        amount: total,
+        customerId: paymentCustomerId,
+        customerEmail: addr.email || user.email,
+        customerPhone: addr.phone || user.phone,
+        customerName: addr.name || [user.first_name, user.last_name].filter(Boolean).join(' '),
+        returnUrl,
+        description: `Order ${order.order_number}`,
+        address: addr,
+      });
+
+      await pool.query(
+        `UPDATE orders
+         SET payment_txn_id = $2,
+             payment_gateway_status = $3,
+             payment_meta = $4::jsonb
+         WHERE id = $1`,
+        [
+          order.id,
+          upi.txn_id || upi.txn_uuid,
+          upi.status,
+          JSON.stringify({
+            intent_url: upi.intent_url,
+            sdk_params: upi.sdk_params,
+            hdfc_order_id: upi.hdfc_order_id,
+          }),
+        ]
+      );
+
+      return res.status(201).json({
+        ...order,
+        payment_method: 'upi',
+        payment_status: 'pending',
+        upi_intent_url: upi.intent_url,
+        amount: upi.amount,
+      });
+    } catch (payErr) {
+      console.error('UPI initiate failed:', payErr.message, payErr.payload || '');
+      await pool.query(
+        `UPDATE orders
+         SET payment_status = 'failed',
+             status = 'cancelled',
+             payment_gateway_status = $2,
+             notes = COALESCE(notes,'') || $3
+         WHERE id = $1`,
+        [order.id, 'INIT_FAILED', `\nUPI init error: ${payErr.message}`]
+      );
+      return res.status(502).json({
+        error: payErr.message || 'Could not start UPI payment. Try COD or contact support.',
+        order_number: order.order_number,
+      });
+    }
   } catch (err) {
     await client.query('ROLLBACK');
     res.status(500).json({ error: err.message });

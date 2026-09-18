@@ -5,8 +5,9 @@ import { useEffect } from 'react';
 
 interface OrderResult {
   order_number: string;
-  id: string;
-  total_amount: string;
+  id?: string;
+  total_amount: string | number;
+  payment_method?: string;
 }
 
 export default function OrderSuccessPage() {
@@ -19,6 +20,8 @@ export default function OrderSuccessPage() {
   }, [order, navigate]);
 
   if (!order) return null;
+
+  const isUpi = order.payment_method === 'upi';
 
   return (
     <div className="max-w-lg mx-auto px-4 py-12 sm:py-20 text-center">
@@ -45,8 +48,17 @@ export default function OrderSuccessPage() {
         <div className="flex items-start gap-2 mt-4 pt-3 border-t border-[#e8e8e8]">
           <Banknote size={16} className="text-[#0f1724] mt-0.5 shrink-0" />
           <p className="text-xs text-gray-600 leading-relaxed">
-            <strong className="text-[#1a1a1a]">Cash on Delivery (COD)</strong> — pay cash when your
-            order is delivered. No advance payment needed.
+            {isUpi ? (
+              <>
+                <strong className="text-[#1a1a1a]">Paid via UPI</strong> — payment confirmed through
+                HDFC SmartGateway.
+              </>
+            ) : (
+              <>
+                <strong className="text-[#1a1a1a]">Cash on Delivery (COD)</strong> — pay cash when your
+                order is delivered. No advance payment needed.
+              </>
+            )}
           </p>
         </div>
       </div>

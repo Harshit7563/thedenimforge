@@ -1,4 +1,5 @@
-const API = import.meta.env.VITE_API_URL || '/api';
+import { API_BASE, networkError } from './apiBase';
+
 export const SITE_URL = import.meta.env.VITE_SITE_URL || 'https://thedenimforge.com';
 
 function getToken() {
@@ -13,7 +14,12 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const token = getToken();
   if (token) headers.Authorization = `Bearer ${token}`;
 
-  const res = await fetch(`${API}${path}`, { ...options, headers });
+  let res: Response;
+  try {
+    res = await fetch(`${API_BASE}${path}`, { ...options, headers });
+  } catch (err) {
+    throw networkError(err);
+  }
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: 'Request failed' }));
     throw new Error(err.error || 'Request failed');
@@ -106,8 +112,25 @@ export const api = {
   updateAddress: (id: string, data: Partial<ShippingAddress>) =>
     request<ShippingAddress>(`/addresses/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   deleteAddress: (id: string) => request(`/addresses/${id}`, { method: 'DELETE' }),
-  placeOrder: (data: { shipping_address?: object; notes?: string }) =>
-    request<{ order_number: string; id: string }>('/orders', { method: 'POST', body: JSON.stringify(data) }),
+  placeOrder: (data: { shipping_address?: object; notes?: string; payment_method?: string }) =>
+    request<{
+      order_number: string;
+      id: string;
+      total_amount?: string | number;
+      payment_method?: string;
+      payment_status?: string;
+      upi_intent_url?: string;
+      amount?: string;
+    }>('/orders', { method: 'POST', body: JSON.stringify(data) }),
+  getPaymentStatus: (orderId: string) =>
+    request<{
+      order_number: string;
+      payment_status: string;
+      status: string;
+      gateway_status?: string;
+      error?: string;
+    }>(`/payments/status/${orderId}`),
+  getPaymentConfig: () => request<{ enabled: boolean; methods: string[] }>('/payments/config'),
   submitInquiry: (data: Record<string, unknown>) =>
     request('/inquiries', { method: 'POST', body: JSON.stringify(data) }),
   subscribeNewsletter: (email: string) =>
@@ -138,6 +161,8 @@ export interface OrderSummary {
 
 export interface OrderDetail extends OrderSummary {
   notes?: string;
+  payment_method?: string;
+  payment_status?: string;
   items: Array<{
     product_name: string;
     quantity: number;

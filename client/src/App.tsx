@@ -19,6 +19,7 @@ import TrackOrderPage from './pages/TrackOrderPage';
 import CheckoutPage from './pages/CheckoutPage';
 import OrderSuccessPage from './pages/OrderSuccessPage';
 import PaymentProcessingPage from './pages/PaymentProcessingPage';
+import PaymentReturnPage from './pages/PaymentReturnPage';
 import { TermsPage, PrivacyPage, ShippingPage, RefundPage, PaymentPage, WholesalePolicyPage } from './pages/PolicyPages';
 import AdminLayout, { AdminGuard } from './admin/AdminLayout';
 import AdminLogin from './admin/AdminLogin';
@@ -41,6 +42,7 @@ function Storefront() {
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/order-success" element={<OrderSuccessPage />} />
           <Route path="/payment-processing" element={<PaymentProcessingPage />} />
+          <Route path="/payment/return" element={<PaymentReturnPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/wholesale" element={<WholesalePage />} />

@@ -278,7 +278,7 @@ export default function AdminProducts() {
       setShowForm(false);
       load(filterCategory);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Save failed');
+      setError(err instanceof Error ? err.message : 'Save failed. Photos check karke dubara try karo.');
     } finally {
       setSaving(false);
     }

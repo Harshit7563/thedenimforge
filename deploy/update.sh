@@ -60,6 +60,17 @@ else
   echo "    PM2 not found — start API manually"
 fi
 
+NGINX_SITE="/etc/nginx/sites-available/thedenimforge.com"
+if [ -w "$NGINX_SITE" ]; then
+  echo "==> Ensuring nginx allows 25MB admin photo uploads..."
+  if grep -q "client_max_body_size" "$NGINX_SITE"; then
+    sed -i 's/client_max_body_size [0-9]\+[mMkK]/client_max_body_size 25M/g' "$NGINX_SITE"
+  else
+    sed -i '/index index.html;/a\    client_max_body_size 25M;' "$NGINX_SITE"
+  fi
+  nginx -t && systemctl reload nginx || echo "WARNING: nginx reload skipped — run: nginx -t && systemctl reload nginx"
+fi
+
 echo ""
 echo "==> Update complete!"
 echo "    Site: https://thedenimforge.com"
