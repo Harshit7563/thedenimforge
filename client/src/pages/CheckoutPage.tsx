@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ShieldCheck, Truck, Banknote, Smartphone } from 'lucide-react';
+import { ArrowLeft, ShieldCheck, Truck, Banknote } from 'lucide-react';
 import { api, formatPrice, type CartItem } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
@@ -214,22 +214,21 @@ export default function CheckoutPage() {
                   <button
                     type="button"
                     onClick={() => set('payment_method', 'upi')}
-                    className={`w-full flex items-start gap-3 p-4 border rounded-xl text-left transition ${
+                    className={`w-full flex items-center gap-3 p-4 border rounded-xl text-left transition ${
                       form.payment_method === 'upi' ? 'border-[#1a1a1a] bg-[#faf9f7]' : 'border-[#e8e8e8]'
                     }`}
                   >
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
-                      form.payment_method === 'upi' ? 'bg-[#0f1724] text-white' : 'bg-[#f0f0f0] text-[#1a1a1a]'
-                    }`}>
-                      <Smartphone size={18} />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-semibold text-[#1a1a1a]">UPI (GPay / PhonePe / Paytm)</p>
-                      <p className="text-xs text-gray-500 mt-0.5">
-                        Pay instantly via UPI Intent / QR — powered by HDFC SmartGateway.
-                      </p>
+                    <img
+                      src="/images/payments/hdfc-logo.svg"
+                      alt="HDFC Bank"
+                      className="w-12 h-12 shrink-0 rounded-lg border border-[#e8e8e8] bg-white object-contain"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-[#1a1a1a]">UPI by HDFC</p>
+                      <p className="text-xs font-medium text-[#004c8f] mt-0.5">HDFC Bank SmartGateway</p>
+                      <p className="text-[11px] text-gray-500 mt-0.5">GPay · PhonePe · Paytm</p>
                       {form.payment_method === 'upi' && (
-                        <p className="text-xs text-green-700 font-medium mt-2">Selected</p>
+                        <p className="text-xs text-green-700 font-medium mt-1.5">Selected</p>
                       )}
                     </div>
                   </button>

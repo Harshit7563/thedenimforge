@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-label="HDFC Bank">
+  <!-- Simplified HDFC-style mark (red geometric) -->
+  <rect width="48" height="48" rx="8" fill="#FFFFFF"/>
+  <g transform="translate(8,8)">
+    <path fill="#ED232A" d="M16 0 L32 8 L32 24 L16 32 L0 24 L0 8 Z"/>
+    <path fill="#FFFFFF" d="M16 6.5 L25.5 11.2 L25.5 20.8 L16 25.5 L6.5 20.8 L6.5 11.2 Z"/>
+    <path fill="#ED232A" d="M16 11 L21 13.5 L21 18.5 L16 21 L11 18.5 L11 13.5 Z"/>
+  </g>
+</svg>
