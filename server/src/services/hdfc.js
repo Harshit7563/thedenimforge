@@ -146,12 +146,18 @@ export async function createUpiIntentPayment({
   const { first, last } = splitName(customerName);
   const phone = digitsPhone(customerPhone);
   const amountStr = Number(amount).toFixed(2);
-  const routingId = String(customerId || `guest${Date.now()}`).replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 40);
+  const routingId = String(customerId || `guest${Date.now()}`).replace(/[^a-zA-Z0-9]/g, '').slice(0, 40);
+
+  // HDFC order_id: alphanumeric only, no special chars, < 21
+  const safeOrderId = String(orderId).replace(/[^a-zA-Z0-9]/g, '').slice(0, 20);
+  if (!safeOrderId || safeOrderId.length > 20) {
+    throw new Error('Invalid order id for payment gateway');
+  }
 
   await hdfcFormRequest(
     '/orders',
     {
-      order_id: orderId,
+      order_id: safeOrderId,
       amount: amountStr,
       currency: 'INR',
       customer_id: routingId,
@@ -179,7 +185,7 @@ export async function createUpiIntentPayment({
       shipping_address_postal_code: String(address.pincode || '').slice(0, 10),
       shipping_address_phone: phone,
       shipping_address_country_code_iso: 'IND',
-      udf1: orderId,
+      udf1: safeOrderId,
     },
     { routingId }
   );
@@ -187,7 +193,7 @@ export async function createUpiIntentPayment({
   const txn = await hdfcFormRequest(
     '/txns',
     {
-      order_id: orderId,
+      order_id: safeOrderId,
       merchant_id: CFG.merchantId,
       payment_method_type: 'UPI',
       payment_method: 'UPI_PAY',
@@ -223,7 +229,7 @@ export async function createUpiIntentPayment({
   }
 
   return {
-    hdfc_order_id: txn.order_id || orderId,
+    hdfc_order_id: txn.order_id || safeOrderId,
     txn_id: txn.txn_id || null,
     txn_uuid: txn.txn_uuid || null,
     status: txn.status || 'PENDING_VBV',

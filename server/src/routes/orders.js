@@ -1,13 +1,40 @@
 import { Router } from 'express';
+import crypto from 'crypto';
 import pool from '../config/db.js';
 import { authMiddleware } from '../middleware/auth.js';
 import { createUpiIntentPayment, hdfcConfigured } from '../services/hdfc.js';
 
 const router = Router();
 
+/**
+ * HDFC SmartGateway order_id rules:
+ * 1) < 21 characters
+ * 2) No special characters
+ * 3) Alphanumeric only
+ * 4) Non-sequential
+ */
 function generateOrderNumber() {
-  // HDFC: < 21 chars, alphanumeric only, non-sequential-looking
-  return ('DF' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5)).toUpperCase().slice(0, 20);
+  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const bytes = crypto.randomBytes(18);
+  let out = 'DF';
+  for (let i = 0; i < 14; i += 1) {
+    out += alphabet[bytes[i] % alphabet.length];
+  }
+  // e.g. DF7K3M9P2QH4R8SW — 16 chars, random, A-Z/2-9 only
+  return out;
+}
+
+async function uniqueOrderNumber(client) {
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    const candidate = generateOrderNumber();
+    const exists = await client.query(
+      'SELECT 1 FROM orders WHERE order_number = $1 LIMIT 1',
+      [candidate]
+    );
+    if (!exists.rows.length) return candidate;
+  }
+  // Extremely unlikely fallback — still < 21, alphanumeric, random
+  return (`DF${crypto.randomBytes(8).toString('hex')}`).toUpperCase().slice(0, 18);
 }
 
 router.get('/', authMiddleware, async (req, res) => {
@@ -111,7 +138,7 @@ router.post('/', authMiddleware, async (req, res) => {
     const shipping = subtotal >= FREE_SHIPPING_AT ? 0 : SHIPPING_FEE;
     const total = subtotal + shipping;
 
-    const orderNumber = generateOrderNumber();
+    const orderNumber = await uniqueOrderNumber(client);
     const orderStatus = paymentMethod === 'upi' ? 'awaiting_payment' : 'pending';
     const paymentStatus = paymentMethod === 'upi' ? 'pending' : 'cod';
     const notes =
