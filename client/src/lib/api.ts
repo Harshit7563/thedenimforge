@@ -128,6 +128,8 @@ export const api = {
       payment_status: string;
       status: string;
       gateway_status?: string;
+      amount?: string | number;
+      txn_id?: string;
       error?: string;
     }>(`/payments/status/${orderId}`),
   getPaymentConfig: () => request<{ enabled: boolean; methods: string[] }>('/payments/config'),
