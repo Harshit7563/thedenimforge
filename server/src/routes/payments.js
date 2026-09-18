@@ -99,6 +99,13 @@ router.get('/status/:orderId', authMiddleware, async (req, res) => {
       const updated = await markOrderPaid(order.order_number, gatewayStatus, {
         txn_id: gateway.txn_id || gateway?.txn_detail?.txn_id,
         last_status_check: new Date().toISOString(),
+        last_status_response: {
+          status: gateway.status,
+          status_id: gateway.status_id,
+          amount: gateway.amount,
+          order_id: gateway.order_id,
+          txn_detail: gateway.txn_detail || null,
+        },
       });
       paymentStatus = updated?.payment_status || 'paid';
     } else if (
@@ -108,12 +115,32 @@ router.get('/status/:orderId', authMiddleware, async (req, res) => {
     ) {
       await markOrderFailed(order.order_number, gatewayStatus, {
         last_status_check: new Date().toISOString(),
+        last_status_response: {
+          status: gateway.status,
+          status_id: gateway.status_id,
+          amount: gateway.amount,
+          order_id: gateway.order_id,
+        },
       });
       paymentStatus = 'failed';
     } else {
       await pool.query(
-        `UPDATE orders SET payment_gateway_status = $2 WHERE id = $1`,
-        [order.id, gatewayStatus]
+        `UPDATE orders SET payment_gateway_status = $2,
+           payment_meta = COALESCE(payment_meta, '{}'::jsonb) || $3::jsonb
+         WHERE id = $1`,
+        [
+          order.id,
+          gatewayStatus,
+          JSON.stringify({
+            last_status_check: new Date().toISOString(),
+            last_status_response: {
+              status: gateway.status,
+              status_id: gateway.status_id,
+              amount: gateway.amount,
+              order_id: gateway.order_id,
+            },
+          }),
+        ]
       );
     }
 
@@ -122,7 +149,7 @@ router.get('/status/:orderId', authMiddleware, async (req, res) => {
       payment_status: paymentStatus,
       status: paymentStatus === 'paid' ? 'pending' : order.status,
       gateway_status: gatewayStatus,
-      amount: gateway.amount,
+      amount: gateway.amount ?? order.total_amount,
       txn_id: gateway?.txn_detail?.txn_id || gateway.txn_id || order.payment_txn_id,
       txn_uuid: gateway?.txn_detail?.txn_uuid || null,
       bank_error: gateway.bank_error_message || gateway?.txn_detail?.error_message || null,

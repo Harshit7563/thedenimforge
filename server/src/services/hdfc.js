@@ -100,6 +100,19 @@ async function hdfcGet(path, { routingId } = {}) {
   } catch {
     data = { raw: text };
   }
+  // Always keep a compact success/fail log line for bank UAT verification
+  console.log('[HDFC][order-status]', JSON.stringify({
+    path,
+    http: res.status,
+    order_id: data?.order_id,
+    status: data?.status,
+    status_id: data?.status_id,
+    amount: data?.amount,
+    txn_id: data?.txn_detail?.txn_id || data?.txn_id,
+  }));
+  if (CFG.logging) {
+    console.log('[HDFC][order-status][full]', text.slice(0, 4000));
+  }
   if (!res.ok) {
     const msg = data?.error_message || data?.error_code || data?.message || text.slice(0, 300) || `HDFC HTTP ${res.status}`;
     const err = new Error(msg);
@@ -107,7 +120,6 @@ async function hdfcGet(path, { routingId } = {}) {
     err.payload = data;
     throw err;
   }
-  log('GET ok', path, { status: data?.status, order_id: data?.order_id });
   return data;
 }
 
