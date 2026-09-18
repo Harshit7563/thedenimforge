@@ -54,6 +54,58 @@ router.get('/orders', adminMiddleware, async (_req, res) => {
   }
 });
 
+/** Sync UPI order status from HDFC Order Status API (raw + update DB). */
+router.get('/orders/:id/payment-status', adminMiddleware, async (req, res) => {
+  try {
+    const { getHdfcOrderStatus, hdfcConfigured } = await import('../services/hdfc.js');
+    if (!hdfcConfigured()) return res.status(503).json({ error: 'HDFC not configured' });
+
+    const orderRes = await pool.query('SELECT * FROM orders WHERE id = $1', [req.params.id]);
+    const order = orderRes.rows[0];
+    if (!order) return res.status(404).json({ error: 'Order not found' });
+
+    const customerId = order.payment_customer_id || 'guest';
+    let gateway;
+    try {
+      gateway = await getHdfcOrderStatus(order.order_number, customerId);
+    } catch (err) {
+      return res.status(502).json({
+        error: err.message,
+        details: err.payload || null,
+        order_number: order.order_number,
+        local_payment_status: order.payment_status,
+        local_gateway_status: order.payment_gateway_status,
+      });
+    }
+
+    const gatewayStatus = String(gateway.status || '').toUpperCase();
+    if (gatewayStatus === 'CHARGED') {
+      await pool.query(
+        `UPDATE orders SET payment_status='paid', status=CASE WHEN status='awaiting_payment' THEN 'pending' ELSE status END,
+         payment_gateway_status=$2, paid_at=COALESCE(paid_at, NOW()) WHERE id=$1`,
+        [order.id, gatewayStatus]
+      );
+    } else {
+      await pool.query(`UPDATE orders SET payment_gateway_status=$2 WHERE id=$1`, [order.id, gatewayStatus]);
+    }
+
+    res.json({
+      order_number: order.order_number,
+      local_before: {
+        payment_status: order.payment_status,
+        gateway_status: order.payment_gateway_status,
+      },
+      hdfc: gateway,
+      mapped: {
+        gateway_status: gatewayStatus,
+        is_paid: gatewayStatus === 'CHARGED',
+      },
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 router.patch('/orders/:id', adminMiddleware, async (req, res) => {
   try {
     const { status } = req.body;

@@ -78,6 +78,8 @@ export const adminApi = {
     return res.json() as Promise<{ urls: string[] }>;
   },
   getOrders: () => adminRequest<Record<string, unknown>[]>('/orders'),
+  getOrderPaymentStatus: (id: string) =>
+    adminRequest<Record<string, unknown>>(`/orders/${id}/payment-status`),
   updateOrderStatus: (id: string, status: string) =>
     adminRequest(`/orders/${id}`, { method: 'PATCH', body: JSON.stringify({ status }) }),
   getInquiries: () => adminRequest<Record<string, unknown>[]>('/inquiries'),

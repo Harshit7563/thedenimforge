@@ -190,8 +190,10 @@ router.post('/', authMiddleware, async (req, res) => {
           upi.status,
           JSON.stringify({
             intent_url: upi.intent_url,
+            authentication_url: upi.authentication_url,
             sdk_params: upi.sdk_params,
             hdfc_order_id: upi.hdfc_order_id,
+            txn_uuid: upi.txn_uuid,
           }),
         ]
       );
@@ -201,6 +203,7 @@ router.post('/', authMiddleware, async (req, res) => {
         payment_method: 'upi',
         payment_status: 'pending',
         upi_intent_url: upi.intent_url,
+        authentication_url: upi.authentication_url,
         amount: upi.amount,
       });
     } catch (payErr) {

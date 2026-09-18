@@ -41,6 +41,27 @@ export default function AdminOrders() {
               >
                 {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
               </select>
+              {(o.payment_method as string) === 'upi' && (
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      const r = await adminApi.getOrderPaymentStatus(o.id as string);
+                      const mapped = r.mapped as { gateway_status?: string; is_paid?: boolean } | undefined;
+                      const hdfc = r.hdfc as { status?: string } | undefined;
+                      alert(
+                        `Order ${r.order_number}\nHDFC: ${hdfc?.status || mapped?.gateway_status}\nPaid: ${mapped?.is_paid ? 'YES' : 'NO'}`
+                      );
+                      adminApi.getOrders().then(setOrders).catch(() => {});
+                    } catch (err) {
+                      alert(err instanceof Error ? err.message : 'Status check failed');
+                    }
+                  }}
+                  className="h-9 px-3 border border-[#004c8f] text-[#004c8f] rounded-lg text-xs font-semibold"
+                >
+                  Check HDFC status
+                </button>
+              )}
               <span className="text-xs text-gray-400">{new Date(o.created_at as string).toLocaleString('en-IN')}</span>
             </div>
           </div>

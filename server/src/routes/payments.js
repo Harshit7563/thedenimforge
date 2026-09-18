@@ -123,9 +123,70 @@ router.get('/status/:orderId', authMiddleware, async (req, res) => {
       status: paymentStatus === 'paid' ? 'pending' : order.status,
       gateway_status: gatewayStatus,
       amount: gateway.amount,
+      txn_id: gateway?.txn_detail?.txn_id || gateway.txn_id || order.payment_txn_id,
+      txn_uuid: gateway?.txn_detail?.txn_uuid || null,
+      bank_error: gateway.bank_error_message || gateway?.txn_detail?.error_message || null,
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * Force-sync one order against HDFC Order Status API (auth user owns order).
+ * Useful when payment page is stuck on AUTHORIZING / PENDING_VBV.
+ */
+router.post('/sync/:orderId', authMiddleware, async (req, res) => {
+  try {
+    if (!hdfcConfigured()) {
+      return res.status(503).json({ error: 'Payment gateway not configured' });
+    }
+    const orderRes = await pool.query(
+      'SELECT * FROM orders WHERE id = $1 AND user_id = $2',
+      [req.params.orderId, req.user.id]
+    );
+    const order = orderRes.rows[0];
+    if (!order) return res.status(404).json({ error: 'Order not found' });
+
+    const customerId = order.payment_customer_id || `u${String(req.user.id).replace(/-/g, '').slice(0, 28)}`;
+    const gateway = await getHdfcOrderStatus(order.order_number, customerId);
+    const gatewayStatus = String(gateway.status || '').toUpperCase();
+
+    let paymentStatus = order.payment_status;
+    if (gatewayStatus === 'CHARGED') {
+      await markOrderPaid(order.order_number, gatewayStatus, {
+        via: 'manual_sync',
+        txn_id: gateway?.txn_detail?.txn_id,
+      });
+      paymentStatus = 'paid';
+    } else if (TERMINAL_FAIL.has(gatewayStatus) || gatewayStatus.includes('FAILED')) {
+      await markOrderFailed(order.order_number, gatewayStatus, { via: 'manual_sync' });
+      paymentStatus = 'failed';
+    } else {
+      await pool.query(
+        `UPDATE orders SET payment_gateway_status = $2,
+           payment_meta = COALESCE(payment_meta, '{}'::jsonb) || $3::jsonb
+         WHERE id = $1`,
+        [order.id, gatewayStatus, JSON.stringify({ last_sync: new Date().toISOString(), hdfc_status: gatewayStatus })]
+      );
+    }
+
+    res.json({
+      order_number: order.order_number,
+      payment_status: paymentStatus,
+      gateway_status: gatewayStatus,
+      hdfc: {
+        status: gateway.status,
+        status_id: gateway.status_id,
+        amount: gateway.amount,
+        txn_detail: gateway.txn_detail || null,
+        payment_gateway_response: gateway.payment_gateway_response || null,
+        upi: gateway.upi || null,
+      },
+    });
+  } catch (err) {
+    console.error('HDFC sync error:', err.message, err.payload || '');
+    res.status(502).json({ error: err.message, details: err.payload || null });
   }
 });
 

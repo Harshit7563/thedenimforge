@@ -80,6 +80,8 @@ async function hdfcGet(path, { routingId } = {}) {
   const url = `${CFG.baseUrl}${path}`;
   const headers = {
     Authorization: basicAuthHeader(),
+    'Content-Type': 'application/x-www-form-urlencoded',
+    Accept: 'application/json',
     'x-merchantid': CFG.merchantId,
     'x-resellerid': CFG.resellerId,
     version: new Date().toISOString().slice(0, 10),
@@ -89,7 +91,7 @@ async function hdfcGet(path, { routingId } = {}) {
     headers['x-customerid'] = String(routingId);
   }
 
-  log('GET', path);
+  log('GET', path, { routingId });
   const res = await fetch(url, { method: 'GET', headers });
   const text = await res.text();
   let data;
@@ -105,6 +107,7 @@ async function hdfcGet(path, { routingId } = {}) {
     err.payload = data;
     throw err;
   }
+  log('GET ok', path, { status: data?.status, order_id: data?.order_id });
   return data;
 }
 
@@ -225,9 +228,11 @@ export async function createUpiIntentPayment({
     txn_uuid: txn.txn_uuid || null,
     status: txn.status || 'PENDING_VBV',
     intent_url: intentUrl,
+    authentication_url: txn?.payment?.authentication?.url || null,
     sdk_params: sdk,
     amount: amountStr,
     customer_id: routingId,
+    raw_txn: CFG.logging ? txn : undefined,
   };
 }
 
