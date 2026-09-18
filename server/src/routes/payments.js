@@ -14,7 +14,6 @@ const TERMINAL_FAIL = new Set([
   'AUTHENTICATION_FAILED',
   'AUTHORIZATION_FAILED',
   'JUSPAY_DECLINED',
-  'AUTHORIZING',
 ]);
 
 async function markOrderPaid(orderNumber, gatewayStatus, extra = {}) {
