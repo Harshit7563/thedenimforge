@@ -218,17 +218,24 @@ router.post('/sync/:orderId', authMiddleware, async (req, res) => {
 });
 
 /**
- * Return URL handler — HDFC may redirect here after payment.
- * Prefer server-side status API; optionally verify HMAC with RESPONSE_KEY.
+ * Return URL — HDFC SmartGateway POSTs form fields here after pay / timeout / cancel.
+ * (GET also supported for manual redirects.)
  */
-router.get('/return', async (req, res) => {
+async function handlePaymentReturn(req, res) {
   try {
-    const params = { ...req.query };
-    const orderNumber = String(params.order_id || '').toUpperCase();
-    const site = process.env.SITE_URL || process.env.CLIENT_URL || 'https://thedenimforge.com';
+    const params = { ...(req.query || {}), ...(req.body || {}) };
+    const orderNumber = String(params.order_id || params.orderId || '')
+      .toUpperCase()
+      .replace(/[^A-Z0-9]/g, '')
+      .slice(0, 20);
+    const statusHint = String(params.status || params.txn_status || '').toUpperCase();
+    const site = (process.env.SITE_URL || process.env.CLIENT_URL || 'https://thedenimforge.com').replace(
+      /\/$/,
+      ''
+    );
 
     if (params.signature && !verifyReturnSignature(params)) {
-      console.warn('HDFC return signature mismatch for', orderNumber);
+      console.warn('HDFC return signature mismatch for', orderNumber || '(no order)');
     }
 
     if (orderNumber) {
@@ -238,24 +245,56 @@ router.get('/return', async (req, res) => {
         const customerId = order.payment_customer_id || 'guest';
         try {
           const gateway = await getHdfcOrderStatus(order.order_number, customerId);
-          const gatewayStatus = String(gateway.status || params.status || '').toUpperCase();
+          const gatewayStatus = String(gateway.status || statusHint || '').toUpperCase();
           if (gatewayStatus === 'CHARGED' || isPaidStatus(gatewayStatus)) {
             await markOrderPaid(order.order_number, gatewayStatus, { via: 'return_url' });
+          } else if (
+            TERMINAL_FAIL.has(gatewayStatus) ||
+            gatewayStatus.includes('FAIL') ||
+            gatewayStatus === 'EXPIRED' ||
+            gatewayStatus === 'TIMEOUT'
+          ) {
+            await markOrderFailed(order.order_number, gatewayStatus, { via: 'return_url' });
+          } else if (
+            TERMINAL_FAIL.has(statusHint) ||
+            statusHint.includes('FAIL') ||
+            statusHint === 'EXPIRED' ||
+            statusHint === 'TIMEOUT'
+          ) {
+            await markOrderFailed(order.order_number, statusHint, { via: 'return_url_hint' });
           }
         } catch (err) {
           console.error('HDFC return status:', err.message);
+          if (
+            TERMINAL_FAIL.has(statusHint) ||
+            statusHint.includes('FAIL') ||
+            statusHint === 'EXPIRED' ||
+            statusHint === 'TIMEOUT'
+          ) {
+            await markOrderFailed(order.order_number, statusHint || 'RETURN_TIMEOUT', {
+              via: 'return_url_hint',
+            });
+          }
         }
       }
-      return res.redirect(`${site}/payment/return?order_id=${encodeURIComponent(orderNumber)}`);
+      return res.redirect(
+        303,
+        `${site}/payment/return?order_id=${encodeURIComponent(orderNumber)}${
+          statusHint ? `&status=${encodeURIComponent(statusHint)}` : ''
+        }`
+      );
     }
 
-    res.redirect(`${site}/payment/return`);
+    return res.redirect(303, `${site}/payment/return`);
   } catch (err) {
-    console.error(err);
-    const site = process.env.SITE_URL || 'https://thedenimforge.com';
-    res.redirect(`${site}/checkout`);
+    console.error('Payment return error:', err);
+    const site = (process.env.SITE_URL || 'https://thedenimforge.com').replace(/\/$/, '');
+    return res.redirect(303, `${site}/checkout`);
   }
-});
+}
+
+router.get('/return', handlePaymentReturn);
+router.post('/return', handlePaymentReturn);
 
 /** Webhook from SmartGateway — always respond 200 when accepted. */
 router.post('/webhook', async (req, res) => {
