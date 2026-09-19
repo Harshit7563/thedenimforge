@@ -8,6 +8,7 @@ interface PayState {
   orderId: string;
   orderNumber: string;
   intentUrl: string;
+  payNowUrl?: string;
   total: number;
   payment_method: string;
 }
@@ -17,11 +18,12 @@ function loadStored(): PayState | null {
     const raw = sessionStorage.getItem('df_pending_payment');
     if (!raw) return null;
     const p = JSON.parse(raw);
-    if (!p.orderId || !p.intentUrl) return null;
+    if (!p.orderId || (!p.intentUrl && !p.payNowUrl)) return null;
     return {
       orderId: p.orderId,
       orderNumber: p.orderNumber,
-      intentUrl: p.intentUrl,
+      intentUrl: p.intentUrl || '',
+      payNowUrl: p.payNowUrl || '',
       total: Number(p.total || p.amount || 0),
       payment_method: 'upi',
     };
@@ -66,8 +68,14 @@ export default function PaymentProcessingPage() {
       navigate('/checkout');
       return;
     }
+    // Prefer HDFC Pay Now page (same as Dyntra)
+    if (data.payNowUrl && !opened) {
+      setOpened(true);
+      window.location.href = data.payNowUrl;
+      return;
+    }
     const mobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-    if (mobile && !opened) {
+    if (mobile && data.intentUrl && !opened) {
       const t = setTimeout(openUpi, 500);
       return () => clearTimeout(t);
     }

@@ -120,6 +120,9 @@ export const api = {
       payment_method?: string;
       payment_status?: string;
       upi_intent_url?: string;
+      authentication_url?: string;
+      pay_now_url?: string;
+      payment_page_url?: string;
       amount?: string;
     }>('/orders', { method: 'POST', body: JSON.stringify(data) }),
   getPaymentStatus: (orderId: string) =>

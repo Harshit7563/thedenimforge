@@ -159,27 +159,47 @@ export default function CheckoutPage() {
       });
       refresh();
 
-      if (method === 'upi' && order.upi_intent_url) {
+      if (method === 'upi') {
+        const hdfcPayUrl =
+          order.pay_now_url ||
+          order.authentication_url ||
+          order.payment_page_url ||
+          '';
+
         sessionStorage.setItem(
           'df_pending_payment',
           JSON.stringify({
             orderId: order.id,
             orderNumber: order.order_number,
-            intentUrl: order.upi_intent_url,
+            intentUrl: order.upi_intent_url || '',
+            payNowUrl: hdfcPayUrl,
             total,
             amount: order.amount || String(total),
           })
         );
-        navigate('/payment-processing', {
-          state: {
-            orderId: order.id,
-            orderNumber: order.order_number,
-            intentUrl: order.upi_intent_url,
-            total,
-            payment_method: 'upi',
-          },
-        });
-        return;
+
+        // Dyntra-style: open HDFC SmartGateway page (/v2/pay/start/...) with amount
+        if (hdfcPayUrl) {
+          window.location.href = hdfcPayUrl;
+          return;
+        }
+
+        // Fallback: in-app QR / UPI intent page
+        if (order.upi_intent_url) {
+          navigate('/payment-processing', {
+            state: {
+              orderId: order.id,
+              orderNumber: order.order_number,
+              intentUrl: order.upi_intent_url,
+              payNowUrl: '',
+              total,
+              payment_method: 'upi',
+            },
+          });
+          return;
+        }
+
+        throw new Error('HDFC payment page URL missing');
       }
 
       navigate('/order-success', { state: { order } });
@@ -190,8 +210,8 @@ export default function CheckoutPage() {
   };
 
   const submitLabel = placing
-    ? (form.payment_method === 'upi' ? 'Starting UPI...' : 'Placing Order...')
-    : (form.payment_method === 'upi' ? 'Pay with UPI' : 'Place Order (COD)');
+    ? (form.payment_method === 'upi' ? 'Opening HDFC…' : 'Placing Order...')
+    : (form.payment_method === 'upi' ? 'Pay with HDFC UPI' : 'Place Order (COD)');
 
   if (loading) {
     return <div className="max-w-5xl mx-auto px-4 py-20 text-center text-gray-400 animate-pulse">Loading checkout...</div>;

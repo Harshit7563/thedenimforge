@@ -158,6 +158,12 @@ export async function createUpiIntentPayment({
   const { first, last } = splitName(customerName);
   const phone = digitsPhone(customerPhone);
   const amountStr = Number(amount).toFixed(2);
+  // Dyntra-style: whole rupees string also accepted by UAT; keep 2dp for bank amount match
+  const hdfcAmount = Number.isFinite(Number(amount)) && Number(amount) > 0
+    ? (Math.abs(Number(amount) - Math.round(Number(amount))) < 0.001
+        ? String(Math.round(Number(amount)))
+        : Number(amount).toFixed(2))
+    : amountStr;
   const routingId = String(customerId || `guest${Date.now()}`).replace(/[^a-zA-Z0-9]/g, '').slice(0, 40);
 
   // HDFC order_id: alphanumeric only, no special chars, < 21
@@ -170,7 +176,7 @@ export async function createUpiIntentPayment({
     '/orders',
     {
       order_id: safeOrderId,
-      amount: amountStr,
+      amount: hdfcAmount,
       currency: 'INR',
       customer_id: routingId,
       customer_email: customerEmail,
@@ -218,6 +224,7 @@ export async function createUpiIntentPayment({
   );
 
   const sdk = txn?.payment?.sdk_params || {};
+  const authUrl = txn?.payment?.authentication?.url || null;
   let intentUrl = sdk.pgIntentUrl || '';
   if (!intentUrl && sdk.tr && sdk.merchant_vpa) {
     const params = new URLSearchParams({
@@ -229,15 +236,18 @@ export async function createUpiIntentPayment({
       pn: sdk.merchant_name || 'The Denim Forge',
       pa: sdk.merchant_vpa,
       mc: sdk.mcc || '5651',
-      am: sdk.amount || amountStr,
+      am: sdk.amount || hdfcAmount,
       cu: sdk.currency || 'INR',
     });
     if (sdk.qrMedium) params.set('qrMedium', sdk.qrMedium);
     intentUrl = `upi://pay?${params.toString()}`;
   }
 
-  if (!intentUrl) {
-    throw new Error('HDFC did not return a UPI intent URL');
+  // Dyntra-style: prefer HDFC Pay Now page (/v2/pay/start/...)
+  const payNowUrl = authUrl || '';
+
+  if (!payNowUrl && !intentUrl) {
+    throw new Error('HDFC did not return a payment URL');
   }
 
   return {
@@ -245,10 +255,12 @@ export async function createUpiIntentPayment({
     txn_id: txn.txn_id || null,
     txn_uuid: txn.txn_uuid || null,
     status: txn.status || 'PENDING_VBV',
-    intent_url: intentUrl,
-    authentication_url: txn?.payment?.authentication?.url || null,
+    intent_url: intentUrl || null,
+    authentication_url: payNowUrl || null,
+    pay_now_url: payNowUrl || null,
+    payment_page_url: payNowUrl || null,
     sdk_params: sdk,
-    amount: amountStr,
+    amount: hdfcAmount,
     customer_id: routingId,
     raw_txn: CFG.logging ? txn : undefined,
   };
