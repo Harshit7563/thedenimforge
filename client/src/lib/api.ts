@@ -92,10 +92,38 @@ export const api = {
     return request<Category[]>(`/categories${q}`);
   },
   getBanners: () => request<Banner[]>('/banners'),
+  sendLoginOtp: (email: string, password: string) =>
+    request<{ otpRequired: boolean; email: string; message: string; expiresInSec: number }>(
+      '/auth/login/send-otp',
+      { method: 'POST', body: JSON.stringify({ email, password }) }
+    ),
+  verifyLoginOtp: (email: string, otp: string) =>
+    request<{ user: User; token: string }>('/auth/login/verify-otp', {
+      method: 'POST',
+      body: JSON.stringify({ email, otp }),
+    }),
+  sendRegisterOtp: (data: Record<string, unknown>) =>
+    request<{ otpRequired: boolean; email: string; message: string; expiresInSec: number }>(
+      '/auth/register/send-otp',
+      { method: 'POST', body: JSON.stringify(data) }
+    ),
+  verifyRegisterOtp: (email: string, otp: string) =>
+    request<{ user: User; token: string }>('/auth/register/verify-otp', {
+      method: 'POST',
+      body: JSON.stringify({ email, otp }),
+    }),
+  /** @deprecated use sendLoginOtp + verifyLoginOtp */
   login: (email: string, password: string) =>
-    request<{ user: User; token: string }>('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) }),
+    request<{ user: User; token: string; otpRequired?: boolean }>('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    }),
+  /** @deprecated use sendRegisterOtp + verifyRegisterOtp */
   register: (data: Record<string, unknown>) =>
-    request<{ user: User; token: string }>('/auth/register', { method: 'POST', body: JSON.stringify(data) }),
+    request<{ user: User; token: string; otpRequired?: boolean }>('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
   getMe: () => request<User>('/auth/me'),
   updateProfile: (data: Partial<User>) =>
     request<User>('/auth/me', { method: 'PUT', body: JSON.stringify(data) }),
